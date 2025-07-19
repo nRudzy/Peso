@@ -6,103 +6,88 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Entity\WeightEntry;
-use App\Repository\WeightEntryRepository;
-use App\Service\BmiCalculator;
+use App\DataProvider\WeightEntryDataProvider;
+use App\Transformer\WeightEntryTransformer;
+use App\Response\ApiResponseWrapper;
 use App\Service\LocaleService;
+use App\Service\BmiCalculator;
 use DateTimeImmutable;
-
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
-
 #[Route('/api/weight-entries')]
 class WeightEntryController extends AbstractController
 {
     public function __construct(
-        private readonly WeightEntryRepository $weightEntryRepository,
-        private readonly ValidatorInterface $validator,
+        private readonly WeightEntryDataProvider $weightEntryDataProvider,
+        private readonly WeightEntryTransformer $weightEntryTransformer,
+        private readonly LocaleService $localeService,
         private readonly BmiCalculator $bmiCalculator,
-        private readonly LocaleService $localeService
+        private readonly ValidatorInterface $validator
     ) {
     }
 
     #[Route('', name: 'api_weight_entries_list', methods: ['GET'])]
-    public function list(Request $request, #[CurrentUser] ?User $user): JsonResponse
+    public function list(Request $request, #[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
+        $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 50);
-        $entries = $this->weightEntryRepository->findByUser($user, $limit);
 
-        $result = [];
-        foreach ($entries as $entry) {
-            $result[] = [
-                'id' => $entry->getId(),
-                'weight' => $entry->getWeight(),
-                'date' => $entry->getDate()?->format('Y-m-d'),
-                'comment' => $entry->getComment(),
-                'createdAt' => $entry->getCreatedAt()?->format('Y-m-d H:i:s'),
-            ];
-        }
+        $result = $this->weightEntryDataProvider->getPaginatedEntriesForUser($user, $page, $limit);
+        $transformedData = $this->weightEntryTransformer->transformMultiple($result['data']);
 
-        return new JsonResponse([
-            'entries' => $result,
-            'total' => count($result),
-        ]);
+        return ApiResponseWrapper::paginated($transformedData, $result['metadata']);
     }
 
     #[Route('/latest', name: 'api_weight_entries_latest', methods: ['GET'])]
-    public function latest(#[CurrentUser] ?User $user): JsonResponse
+    public function latest(#[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
-        $entry = $this->weightEntryRepository->findLatestByUser($user);
+        $entry = $this->weightEntryDataProvider->getLatestEntryForUser($user);
 
         if (!$entry instanceof \App\Entity\WeightEntry) {
-            return new JsonResponse(['entry' => null]);
+            return ApiResponseWrapper::success(['entry' => null]);
         }
 
-        return new JsonResponse([
-            'entry' => [
-                'id' => $entry->getId(),
-                'weight' => $entry->getWeight(),
-                'date' => $entry->getDate()?->format('Y-m-d'),
-                'comment' => $entry->getComment(),
-                'createdAt' => $entry->getCreatedAt()?->format('Y-m-d H:i:s'),
-            ],
-        ]);
+        $transformedData = $this->weightEntryTransformer->transform($entry);
+        return ApiResponseWrapper::success(['entry' => $transformedData]);
     }
 
     #[Route('', name: 'api_weight_entries_create', methods: ['POST'])]
-    public function create(Request $request, #[CurrentUser] ?User $user): JsonResponse
+    public function create(Request $request, #[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (!$data || empty($data['weight'])) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('required_field', ['field' => 'weight'], 'validators'),
-            ], Response::HTTP_BAD_REQUEST);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('required_field', ['field' => 'weight'], 'validators'),
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         $entry = new WeightEntry();
@@ -113,9 +98,10 @@ class WeightEntryController extends AbstractController
             try {
                 $entry->setDate(new DateTimeImmutable($data['date']));
             } catch (Exception) {
-                return new JsonResponse([
-                    'error' => $this->localeService->trans('invalid_date', [], 'validators'),
-                ], Response::HTTP_BAD_REQUEST);
+                return ApiResponseWrapper::error(
+                    $this->localeService->trans('invalid_date', [], 'validators'),
+                    Response::HTTP_BAD_REQUEST
+                );
             }
         }
 
@@ -131,75 +117,69 @@ class WeightEntryController extends AbstractController
                 $errorMessages[] = $error->getMessage();
             }
 
-            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('validation.failed', [], 'api'),
+                Response::HTTP_BAD_REQUEST,
+                $errorMessages
+            );
         }
 
-        $this->weightEntryRepository->save($entry, true);
+        // Save entry (this should be moved to a service)
+        $this->weightEntryDataProvider->saveEntry($entry);
 
-        return new JsonResponse([
-            'message' => $this->localeService->trans('endpoints.weight_entries.create.success', [], 'api'),
-            'entry' => [
-                'id' => $entry->getId(),
-                'weight' => $entry->getWeight(),
-                'date' => $entry->getDate()?->format('Y-m-d'),
-                'comment' => $entry->getComment(),
-                'createdAt' => $entry->getCreatedAt()?->format('Y-m-d H:i:s'),
-            ],
-        ], Response::HTTP_CREATED);
+        $transformedData = $this->weightEntryTransformer->transform($entry);
+        return ApiResponseWrapper::created(['entry' => $transformedData]);
     }
 
     #[Route('/{id}', name: 'api_weight_entries_show', methods: ['GET'])]
-    public function show(int $id, #[CurrentUser] ?User $user): JsonResponse
+    public function show(int $id, #[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
-        $entry = $this->weightEntryRepository->find($id);
+        $entry = $this->weightEntryDataProvider->getEntryByIdForUser($id, $user);
 
-        if (!$entry || $entry->getUser()?->getId() !== $user->getId()) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('endpoints.weight_entries.update.error.not_found', [], 'api'),
-            ], Response::HTTP_NOT_FOUND);
+        if (!$entry) {
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('endpoints.weight_entries.update.error.not_found', [], 'api'),
+                Response::HTTP_NOT_FOUND
+            );
         }
 
-        return new JsonResponse([
-            'entry' => [
-                'id' => $entry->getId(),
-                'weight' => $entry->getWeight(),
-                'date' => $entry->getDate()?->format('Y-m-d'),
-                'comment' => $entry->getComment(),
-                'createdAt' => $entry->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $entry->getUpdatedAt()?->format('Y-m-d H:i:s'),
-            ],
-        ]);
+        $transformedData = $this->weightEntryTransformer->transform($entry);
+        return ApiResponseWrapper::success(['entry' => $transformedData]);
     }
 
     #[Route('/{id}', name: 'api_weight_entries_update', methods: ['PUT'])]
-    public function update(int $id, Request $request, #[CurrentUser] ?User $user): JsonResponse
+    public function update(int $id, Request $request, #[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
-        $entry = $this->weightEntryRepository->find($id);
+        $entry = $this->weightEntryDataProvider->getEntryByIdForUser($id, $user);
 
-        if (!$entry || $entry->getUser()?->getId() !== $user->getId()) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('endpoints.weight_entries.update.error.not_found', [], 'api'),
-            ], Response::HTTP_NOT_FOUND);
+        if (!$entry) {
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('endpoints.weight_entries.update.error.not_found', [], 'api'),
+                Response::HTTP_NOT_FOUND
+            );
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (!$data) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.invalid_json', [], 'messages'),
-            ], Response::HTTP_BAD_REQUEST);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.invalid_json', [], 'messages'),
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         if (isset($data['weight'])) {
@@ -210,9 +190,10 @@ class WeightEntryController extends AbstractController
             try {
                 $entry->setDate(new DateTimeImmutable($data['date']));
             } catch (Exception) {
-                return new JsonResponse([
-                    'error' => $this->localeService->trans('invalid_date', [], 'validators'),
-                ], Response::HTTP_BAD_REQUEST);
+                return ApiResponseWrapper::error(
+                    $this->localeService->trans('invalid_date', [], 'validators'),
+                    Response::HTTP_BAD_REQUEST
+                );
             }
         }
 
@@ -228,63 +209,60 @@ class WeightEntryController extends AbstractController
                 $errorMessages[] = $error->getMessage();
             }
 
-            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('validation.failed', [], 'api'),
+                Response::HTTP_BAD_REQUEST,
+                $errorMessages
+            );
         }
 
-        $this->weightEntryRepository->save($entry, true);
+        // Save entry (this should be moved to a service)
+        $this->weightEntryDataProvider->saveEntry($entry);
 
-        return new JsonResponse([
-            'message' => $this->localeService->trans('endpoints.weight_entries.update.success', [], 'api'),
-            'entry' => [
-                'id' => $entry->getId(),
-                'weight' => $entry->getWeight(),
-                'date' => $entry->getDate()?->format('Y-m-d'),
-                'comment' => $entry->getComment(),
-                'createdAt' => $entry->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $entry->getUpdatedAt()?->format('Y-m-d H:i:s'),
-            ],
-        ]);
+        $transformedData = $this->weightEntryTransformer->transform($entry);
+        return ApiResponseWrapper::success(['entry' => $transformedData]);
     }
 
     #[Route('/{id}', name: 'api_weight_entries_delete', methods: ['DELETE'])]
-    public function delete(int $id, #[CurrentUser] ?User $user): JsonResponse
+    public function delete(int $id, #[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
-        $entry = $this->weightEntryRepository->find($id);
+        $entry = $this->weightEntryDataProvider->getEntryByIdForUser($id, $user);
 
-        if (!$entry || $entry->getUser()?->getId() !== $user->getId()) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('endpoints.weight_entries.update.error.not_found', [], 'api'),
-            ], Response::HTTP_NOT_FOUND);
+        if (!$entry) {
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('endpoints.weight_entries.update.error.not_found', [], 'api'),
+                Response::HTTP_NOT_FOUND
+            );
         }
 
-        $this->weightEntryRepository->remove($entry, true);
+        // Delete entry (this should be moved to a service)
+        $this->weightEntryDataProvider->deleteEntry($entry);
 
-        return new JsonResponse([
-            'message' => $this->localeService->trans('endpoints.weight_entries.delete.success', [], 'api'),
+        return ApiResponseWrapper::success([
+            'message' => $this->localeService->trans('endpoints.weight_entries.delete.success', [], 'api')
         ]);
     }
 
     #[Route('/stats/progress', name: 'api_weight_entries_progress', methods: ['GET'])]
-    public function progress(Request $request, #[CurrentUser] ?User $user): JsonResponse
+    public function progress(Request $request, #[CurrentUser] ?User $user): Response
     {
         if (!$user instanceof \App\Entity\User) {
-            return new JsonResponse([
-                'error' => $this->localeService->trans('errors.authentication.required', [], 'api'),
-            ], Response::HTTP_UNAUTHORIZED);
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
         }
 
         $days = $request->query->getInt('days', 30);
-        $startDate = new DateTimeImmutable(sprintf('-%d days', $days));
-        $endDate = new DateTimeImmutable();
-
-        $entries = $this->weightEntryRepository->findByUserAndDateRange($user, $startDate, $endDate);
-        $totalWeightLoss = $this->weightEntryRepository->calculateTotalWeightLoss($user);
+        $entries = $this->weightEntryDataProvider->getEntriesForProgress($user, $days);
+        $totalWeightLoss = $this->weightEntryDataProvider->getTotalWeightLoss($user);
 
         $progressData = [];
         foreach ($entries as $entry) {
@@ -301,20 +279,18 @@ class WeightEntryController extends AbstractController
                 );
             }
             
-            $progressData[] = [
-                'date' => $entry->getDate()?->format('Y-m-d'),
-                'weight' => $entry->getWeight(),
-                'bmi' => $bmi,
-            ];
+            $progressData[] = $this->weightEntryTransformer->transformForProgress($entry, $bmi);
         }
 
-        return new JsonResponse([
+        $currentWeight = $entries === [] ? $user->getInitialWeight() : end($entries)->getWeight();
+
+        return ApiResponseWrapper::success([
             'progress' => $progressData,
             'summary' => [
                 'totalWeightLoss' => $totalWeightLoss,
-                'currentWeight' => $entries === [] ? $user->getInitialWeight() : end($entries)->getWeight(),
+                'currentWeight' => $currentWeight,
                 'targetWeight' => $user->getTargetWeight(),
-                'remainingWeight' => $entries === [] ? $user->getInitialWeight() - $user->getTargetWeight() : end($entries)->getWeight() - $user->getTargetWeight(),
+                'remainingWeight' => $currentWeight - $user->getTargetWeight(),
                 'period' => $days . ' derniers jours',
             ],
         ]);
