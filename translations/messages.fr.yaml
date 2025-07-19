@@ -1,0 +1,58 @@
+# Messages généraux en français
+app:
+  name: "API Peso"
+  description: "API de suivi de perte de poids"
+  
+auth:
+  login_success: "Connexion réussie"
+  logout_success: "Déconnexion réussie"  
+  registration_success: "Utilisateur créé avec succès"
+  unauthorized: "Non authentifié"
+  access_denied: "Accès refusé"
+  invalid_credentials: "Identifiants invalides"
+  user_not_found: "Utilisateur non trouvé"
+  
+user:
+  profile_updated: "Profil mis à jour avec succès"
+  profile_public: "Profil public"
+  profile_private: "Profil privé"
+  email_verified: "Email vérifié"
+  email_not_verified: "Email non vérifié"
+  
+weight:
+  entry_created: "Entrée de poids créée avec succès"
+  entry_updated: "Entrée de poids mise à jour avec succès"
+  entry_deleted: "Entrée de poids supprimée avec succès"
+  entry_not_found: "Entrée de poids non trouvée"
+  
+units:
+  kg: "kg"
+  lbs: "lbs"
+  cm: "cm"
+  inch: "pouces"
+  
+gender:
+  male: "Homme"
+  female: "Femme"
+  other: "Autre"
+  
+errors:
+  invalid_json: "Données JSON invalides"
+  validation_failed: "Échec de la validation"
+  server_error: "Erreur serveur interne"
+  not_found: "Ressource non trouvée"
+  
+fields:
+  email: "Email"
+  password: "Mot de passe"
+  name: "Nom"
+  gender: "Sexe"
+  age: "Âge"
+  height: "Taille"
+  weight: "Poids"
+  initial_weight: "Poids initial"
+  target_weight: "Poids cible"
+  date: "Date"
+  comment: "Commentaire"
+  created_at: "Créé le"
+  updated_at: "Mis à jour le" 
