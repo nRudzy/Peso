@@ -16,6 +16,10 @@ RUN apt-get update && apt-get install -y \
 # Installation de PCOV pour la couverture de code
 RUN pecl install pcov && docker-php-ext-enable pcov
 
+# Installation de Node.js et npm
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
