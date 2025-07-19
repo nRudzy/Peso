@@ -1,0 +1,54 @@
+deptrac:
+  paths:
+    - ./src
+  exclude_files:
+    - '#.*test.*#'
+    - '#.*Test.*#'
+  layers:
+    - name: Controller
+      collectors:
+        - type: directory
+          value: src/Controller.*
+    - name: Service
+      collectors:
+        - type: directory
+          value: src/Service.*
+    - name: Repository
+      collectors:
+        - type: directory
+          value: src/Repository.*
+    - name: Entity
+      collectors:
+        - type: directory
+          value: src/Entity.*
+    - name: ApiResource
+      collectors:
+        - type: directory
+          value: src/ApiResource.*
+    - name: EventListener
+      collectors:
+        - type: directory
+          value: src/EventListener.*
+  ruleset:
+    Controller:
+      - Service
+      - Repository
+      - Entity
+      - ApiResource
+    Service:
+      - Repository
+      - Entity
+      - EventListener
+    Repository:
+      - Entity
+    Entity: ~
+    ApiResource:
+      - Entity
+    EventListener:
+      - Service
+      - Entity
+  skip_violations:
+    Controller:
+      - Service
+  baseline:
+    - ./deptrac-baseline.yaml 

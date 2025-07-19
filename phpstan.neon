@@ -1,0 +1,42 @@
+includes:
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - src/Kernel.php
+        - tests/bootstrap.php
+    
+    # Symfony specific
+    symfony:
+        container_xml_path: var/cache/dev/App_KernelDevDebugContainer.xml
+        console_application_loader: tests/console-application.php
+    
+    # Doctrine specific
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
+    
+    # Ignore missing typehints (you can remove these as you add typehints)
+    ignoreErrors:
+        -
+            identifier: missingType.iterableValue
+        -
+            identifier: missingType.generics
+    
+        # Allow mixed types in some cases for now
+        - '#Parameter .* of .* has no typehint specified#'
+        - '#Method .* has no return typehint specified#'
+        
+        # Doctrine related
+        - '#Property .* does not accept null#'
+        - '#Cannot call method .* on .* null#'
+        
+    # Extensions
+    universalObjectCratesClasses:
+        - Symfony\Component\HttpFoundation\ParameterBag
+        - Symfony\Component\HttpFoundation\Request 

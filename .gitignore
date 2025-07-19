@@ -51,4 +51,24 @@ cache/
 ###> Tests ###
 /coverage/
 .phpunit.result.cache
-###< Tests ### 
+###< Tests ###
+
+###> Quality Tools ###
+# PHPStan
+/var/cache/phpstan/
+# Psalm
+psalm-baseline.xml
+# PHP-CS-Fixer
+.php-cs-fixer.cache
+/var/cache/.php-cs-fixer.cache
+# PHPCS
+/var/cache/phpcs.cache
+# Rector
+/var/cache/rector/
+# Deptrac
+deptrac-baseline.yaml
+# Infection
+infection.log
+# Reports
+/var/reports/
+###< Quality Tools ### 

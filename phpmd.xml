@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<ruleset name="Peso PHPMD Rules"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
+         xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
+    
+    <description>PHPMD Ruleset for Peso API project</description>
+
+    <!-- Import all rule sets -->
+    <rule ref="rulesets/cleancode.xml">
+        <!-- Allow static access for Symfony services -->
+        <exclude name="StaticAccess" />
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml">
+        <!-- Adjust complexity rules for controllers -->
+        <exclude name="ExcessiveMethodLength" />
+        <exclude name="ExcessiveClassLength" />
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml/ExcessiveMethodLength">
+        <properties>
+            <property name="minimum" description="The method size reporting threshold" value="30"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml/ExcessiveClassLength">
+        <properties>
+            <property name="minimum" description="The class size reporting threshold" value="150"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
+        <properties>
+            <property name="reportLevel" description="The Cyclomatic Complexity reporting threshold" value="12"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/controversial.xml">
+        <!-- Allow camelCase for Symfony conventions -->
+        <exclude name="CamelCaseClassName" />
+        <exclude name="CamelCasePropertyName" />
+        <exclude name="CamelCaseMethodName" />
+        <exclude name="CamelCaseParameterName" />
+        <exclude name="CamelCaseVariableName" />
+    </rule>
+    
+    <rule ref="rulesets/design.xml">
+        <!-- Allow coupling for Symfony controllers and services -->
+        <exclude name="CouplingBetweenObjects" />
+    </rule>
+    
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="minimum" description="Maximum number of acceptable dependencies" value="15"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/naming.xml">
+        <!-- Symfony naming conventions -->
+        <exclude name="ShortVariable" />
+        <exclude name="LongVariable" />
+    </rule>
+    
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <property name="minimum" description="Minimum length for a variable" value="2"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/naming.xml/LongVariable">
+        <properties>
+            <property name="maximum" description="Maximum length for a variable" value="25"/>
+        </properties>
+    </rule>
+    
+    <rule ref="rulesets/unusedcode.xml">
+        <!-- Allow unused parameters in Symfony event listeners -->
+        <exclude name="UnusedFormalParameter" />
+    </rule>
+    
+    <!-- Exclude files that don't need to be checked -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/var/*</exclude-pattern>
+    <exclude-pattern>*/public/*</exclude-pattern>
+    <exclude-pattern>*/migrations/*</exclude-pattern>
+    <exclude-pattern>src/Kernel.php</exclude-pattern>
+    <exclude-pattern>tests/bootstrap.php</exclude-pattern>
+</ruleset> 
