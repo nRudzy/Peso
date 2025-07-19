@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use App\Service\LocaleService;
@@ -11,13 +13,14 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class LocaleListener
 {
     public function __construct(
-        private LocaleService $localeService
-    ) {}
+        private readonly LocaleService $localeService
+    ) {
+    }
 
     public function onKernelRequest(RequestEvent $event): void
     {
         $request = $event->getRequest();
-        
+
         // Skip locale detection for non-main requests
         if (!$event->isMainRequest()) {
             return;
@@ -26,8 +29,8 @@ class LocaleListener
         // Detect and set locale
         $locale = $this->localeService->detectLocale();
         $this->localeService->setLocale($locale);
-        
+
         // Set locale on request for other components
         $request->setLocale($locale);
     }
-} 
+}

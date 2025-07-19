@@ -33,7 +33,6 @@ docker-compose exec php php bin/console make:controller Api/AuthController --no-
 # Création des services
 echo "🔧 Création des services..."
 docker-compose exec php php bin/console make:service BmiCalculator
-docker-compose exec php php bin/console make:service EmailService
 docker-compose exec php php bin/console make:service UserService
 
 # Création des migrations

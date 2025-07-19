@@ -34,7 +34,7 @@ return RectorConfig::configure()
         SetList::EARLY_RETURN,
         SetList::INSTANCEOF,
         SetList::TYPE_DECLARATION,
-        SymfonySetList::SYMFONY_73,
+        SymfonySetList::SYMFONY_70,
         SymfonySetList::SYMFONY_CODE_QUALITY,
         SymfonySetList::SYMFONY_CONSTRUCTOR_INJECTION,
         DoctrineSetList::DOCTRINE_CODE_QUALITY,
@@ -46,4 +46,4 @@ return RectorConfig::configure()
     ])
     ->withCache(__DIR__ . '/var/cache/rector')
     ->withParallel()
-; 
+;

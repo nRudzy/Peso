@@ -57,41 +57,41 @@ return [
     ],
 
     'remove' => [
-        \NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions::class,
-        \NunoMaduro\PhpInsights\Domain\Insights\ForbiddenFinalClasses::class,
-        \NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods::class,
-        \NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits::class,
-        \NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses::class,
-        \SlevomatCodingStandard\Sniffs\ControlStructures\DisallowEmptySniff::class,
-        \SlevomatCodingStandard\Sniffs\Classes\SuperfluousAbstractClassNamingSniff::class,
-        \SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff::class,
-        \SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff::class,
-        \SlevomatCodingStandard\Sniffs\Commenting\DisallowOneLinePropertyDocCommentSniff::class,
-        \SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff::class,
-        \SlevomatCodingStandard\Sniffs\Classes\ModernClassNameReferenceSniff::class,
-        \SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff::class,
-        \PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff::class,
+        NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions::class,
+        NunoMaduro\PhpInsights\Domain\Insights\ForbiddenFinalClasses::class,
+        NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods::class,
+        NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits::class,
+        NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses::class,
+        SlevomatCodingStandard\Sniffs\ControlStructures\DisallowEmptySniff::class,
+        SlevomatCodingStandard\Sniffs\Classes\SuperfluousAbstractClassNamingSniff::class,
+        SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff::class,
+        SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff::class,
+        SlevomatCodingStandard\Sniffs\Commenting\DisallowOneLinePropertyDocCommentSniff::class,
+        SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff::class,
+        SlevomatCodingStandard\Sniffs\Classes\ModernClassNameReferenceSniff::class,
+        SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff::class,
+        PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff::class,
     ],
 
     'config' => [
-        \SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff::class => [
+        SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff::class => [
             'maxLinesLength' => 30,
         ],
-        \SlevomatCodingStandard\Sniffs\Complexity\Cognitive::class => [
+        SlevomatCodingStandard\Sniffs\Complexity\Cognitive::class => [
             'warningThreshold' => 10,
             'errorThreshold' => 15,
         ],
-        \SlevomatCodingStandard\Sniffs\Files\TypeNameMatchesFileNameSniff::class => [
+        SlevomatCodingStandard\Sniffs\Files\TypeNameMatchesFileNameSniff::class => [
             'rootNamespaces' => [
                 'src' => 'App',
                 'tests' => 'App\Tests',
             ],
         ],
-        \PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff::class => [
+        PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff::class => [
             'lineLimit' => 120,
             'absoluteLineLimit' => 160,
         ],
-        \PhpCsFixer\Fixer\Import\OrderedImportsFixer::class => [
+        PhpCsFixer\Fixer\Import\OrderedImportsFixer::class => [
             'imports_order' => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha',
         ],
@@ -126,4 +126,4 @@ return [
     |
     */
     'threads' => null,
-]; 
+];

@@ -23,41 +23,23 @@
     </projectFiles>
 
     <issueHandlers>
-        <!-- Symfony specific issues -->
+        <!-- Allow some flexibility for Symfony/Doctrine projects -->
         <MissingClosureReturnType errorLevel="info" />
         <MissingReturnType errorLevel="info" />
         <MissingPropertyType errorLevel="info" />
         <PropertyNotSetInConstructor errorLevel="info" />
+        <MixedAssignment errorLevel="info" />
+        <MixedArrayAccess errorLevel="info" />
+        <MixedArgument errorLevel="info" />
+        <PossiblyUndefinedArrayOffset errorLevel="info" />
+        <InvalidArrayOffset errorLevel="info" />
         
-        <!-- Doctrine specific -->
-        <TooManyArguments>
-            <errorLevel type="suppress">
-                <referencedMethod name="Doctrine\ORM\QueryBuilder::*" />
-            </errorLevel>
-        </TooManyArguments>
-        
-        <!-- API Platform specific -->
-        <UndefinedMagicMethod>
-            <errorLevel type="suppress">
-                <referencedClass name="ApiPlatform\*" />
-            </errorLevel>
-        </UndefinedMagicMethod>
-        
-        <!-- PHPUnit specific -->
+        <!-- Suppress some issues in tests -->
         <PossiblyUnusedMethod>
             <errorLevel type="suppress">
                 <directory name="tests" />
             </errorLevel>
         </PossiblyUnusedMethod>
-        
-        <!-- Allow mixed types in some cases -->
-        <MixedAssignment errorLevel="info" />
-        <MixedArrayAccess errorLevel="info" />
-        <MixedArgument errorLevel="info" />
-        
-        <!-- Less strict for arrays -->
-        <PossiblyUndefinedArrayOffset errorLevel="info" />
-        <InvalidArrayOffset errorLevel="info" />
     </issueHandlers>
 
     <plugins>

@@ -177,7 +177,7 @@ APP_ENV=test
 
 ### 1. Avant chaque commit
 ```bash
-make quality-fix           # Corriger automatiquement
+make fix           # Corriger automatiquement
 make quality              # Vérifier tout reste
 make test                 # Lancer les tests
 ```

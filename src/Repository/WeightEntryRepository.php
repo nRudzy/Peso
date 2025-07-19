@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
-use App\Entity\WeightEntry;
 use App\Entity\User;
+use App\Entity\WeightEntry;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -12,8 +15,8 @@ use Doctrine\Persistence\ManagerRegistry;
  *
  * @method WeightEntry|null find($id, $lockMode = null, $lockVersion = null)
  * @method WeightEntry|null findOneBy(array $criteria, array $orderBy = null)
- * @method WeightEntry[]    findAll()
- * @method WeightEntry[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method WeightEntry[] findAll()
+ * @method WeightEntry[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class WeightEntryRepository extends ServiceEntityRepository
 {
@@ -41,7 +44,7 @@ class WeightEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve toutes les entrées de poids d'un utilisateur
+     * Trouve toutes les entrées de poids d'un utilisateur.
      */
     public function findByUser(User $user, ?int $limit = null): array
     {
@@ -58,7 +61,7 @@ class WeightEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve la dernière entrée de poids d'un utilisateur
+     * Trouve la dernière entrée de poids d'un utilisateur.
      */
     public function findLatestByUser(User $user): ?WeightEntry
     {
@@ -72,9 +75,9 @@ class WeightEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les entrées de poids d'un utilisateur dans une période donnée
+     * Trouve les entrées de poids d'un utilisateur dans une période donnée.
      */
-    public function findByUserAndDateRange(User $user, \DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    public function findByUserAndDateRange(User $user, DateTimeImmutable $startDate, DateTimeImmutable $endDate): array
     {
         return $this->createQueryBuilder('w')
             ->andWhere('w.user = :user')
@@ -89,12 +92,12 @@ class WeightEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Calcule la perte de poids totale d'un utilisateur
+     * Calcule la perte de poids totale d'un utilisateur.
      */
     public function calculateTotalWeightLoss(User $user): float
     {
         $latestEntry = $this->findLatestByUser($user);
-        if (!$latestEntry) {
+        if (!$latestEntry instanceof \App\Entity\WeightEntry) {
             return 0;
         }
 
@@ -102,7 +105,7 @@ class WeightEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les entrées de poids avec les plus grandes pertes
+     * Trouve les entrées de poids avec les plus grandes pertes.
      */
     public function findTopWeightLossEntries(User $user, int $limit = 5): array
     {
@@ -114,4 +117,4 @@ class WeightEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-} 
+}

@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Delete;
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -20,11 +23,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
     operations: [
-        new Get(security: "object == user or object.isProfilePublic()"),
+        new Get(security: 'object == user or object.isProfilePublic()'),
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
         new Post(security: "is_granted('PUBLIC_ACCESS')"),
-        new Put(security: "object == user"),
-        new Delete(security: "is_granted('ROLE_ADMIN')")
+        new Put(security: 'object == user'),
+        new Delete(security: "is_granted('ROLE_ADMIN')"),
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']]
@@ -44,7 +47,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     #[ORM\Column]
     #[Groups(['user:write'])]
@@ -106,11 +109,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private bool $isEmailVerified = false;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var \Doctrine\Common\Collections\Collection<int, \App\Entity\WeightEntry>
+     */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: WeightEntry::class, orphanRemoval: true)]
     #[Groups(['user:read'])]
     private Collection $weightEntries;
@@ -118,8 +124,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->weightEntries = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
-        $this->roles = ['ROLE_USER'];
+        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -135,35 +140,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        assert($this->email !== null && $this->email !== '', 'User email must not be null or empty');
+        return $this->email;
     }
 
     public function getRoles(): array
     {
         $roles = $this->roles;
         $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
 
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+
         return $this;
     }
 
     public function getPassword(): string
     {
+        assert($this->password !== null, 'User password must not be null');
         return $this->password;
     }
 
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -180,6 +191,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setName(?string $name): static
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -191,6 +203,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setGender(string $gender): static
     {
         $this->gender = $gender;
+
         return $this;
     }
 
@@ -202,6 +215,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAge(int $age): static
     {
         $this->age = $age;
+
         return $this;
     }
 
@@ -213,6 +227,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setHeight(float $height): static
     {
         $this->height = $height;
+
         return $this;
     }
 
@@ -224,6 +239,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setInitialWeight(float $initialWeight): static
     {
         $this->initialWeight = $initialWeight;
+
         return $this;
     }
 
@@ -235,6 +251,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTargetWeight(float $targetWeight): static
     {
         $this->targetWeight = $targetWeight;
+
         return $this;
     }
 
@@ -246,6 +263,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setWeightUnit(string $weightUnit): static
     {
         $this->weightUnit = $weightUnit;
+
         return $this;
     }
 
@@ -257,6 +275,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setHeightUnit(string $heightUnit): static
     {
         $this->heightUnit = $heightUnit;
+
         return $this;
     }
 
@@ -268,6 +287,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsProfilePublic(bool $isProfilePublic): static
     {
         $this->isProfilePublic = $isProfilePublic;
+
         return $this;
     }
 
@@ -279,28 +299,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsEmailVerified(bool $isEmailVerified): static
     {
         $this->isEmailVerified = $isEmailVerified;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(?DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -318,22 +341,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->weightEntries->add($weightEntry);
             $weightEntry->setUser($this);
         }
+
         return $this;
     }
 
     public function removeWeightEntry(WeightEntry $weightEntry): static
     {
-        if ($this->weightEntries->removeElement($weightEntry)) {
-            if ($weightEntry->getUser() === $this) {
-                $weightEntry->setUser(null);
-            }
+        if ($this->weightEntries->removeElement($weightEntry) && $weightEntry->getUser() === $this) {
+            $weightEntry->setUser(null);
         }
+
         return $this;
     }
 
     #[ORM\PreUpdate]
     public function setUpdatedAtValue(): void
     {
-        $this->updatedAt = new \DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
     }
-} 
+}

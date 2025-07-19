@@ -1,31 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\WeightEntryRepository;
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+
+use function count;
 
 class UserService
 {
     public function __construct(
-        private UserRepository $userRepository,
-        private WeightEntryRepository $weightEntryRepository,
-        private UserPasswordHasherInterface $passwordHasher,
-        private EmailService $emailService,
-        private BmiCalculator $bmiCalculator
-    ) {}
+        private readonly UserRepository $userRepository,
+        private readonly WeightEntryRepository $weightEntryRepository,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly BmiCalculator $bmiCalculator
+    ) {
+    }
 
     /**
-     * Crée un nouvel utilisateur
+     * Crée un nouvel utilisateur.
      */
     public function createUser(array $userData): User
     {
         // Vérifier si l'email existe déjà
-        if ($this->userRepository->findByEmail($userData['email'])) {
-            throw new \InvalidArgumentException('Un utilisateur avec cet email existe déjà.');
+        if ($this->userRepository->findByEmail($userData['email']) instanceof \App\Entity\User) {
+            throw new InvalidArgumentException('Un utilisateur avec cet email existe déjà.');
         }
 
         $user = new User();
@@ -47,23 +53,21 @@ class UserService
         // Sauvegarder l'utilisateur
         $this->userRepository->save($user, true);
 
-        // Envoyer l'email de bienvenue
-        $this->emailService->sendWelcomeEmail($user);
-
         return $user;
     }
 
     /**
-     * Met à jour un utilisateur
+     * Met à jour un utilisateur.
      */
     public function updateUser(User $user, array $userData): User
     {
         if (isset($userData['email']) && $userData['email'] !== $user->getEmail()) {
             // Vérifier si le nouvel email existe déjà
             $existingUser = $this->userRepository->findByEmail($userData['email']);
-            if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                throw new \InvalidArgumentException('Un utilisateur avec cet email existe déjà.');
+            if ($existingUser instanceof \App\Entity\User && $existingUser->getId() !== $user->getId()) {
+                throw new InvalidArgumentException('Un utilisateur avec cet email existe déjà.');
             }
+
             $user->setEmail($userData['email']);
         }
 
@@ -105,7 +109,7 @@ class UserService
     }
 
     /**
-     * Change le mot de passe d'un utilisateur
+     * Change le mot de passe d'un utilisateur.
      */
     public function changePassword(User $user, string $currentPassword, string $newPassword): bool
     {
@@ -123,7 +127,7 @@ class UserService
     }
 
     /**
-     * Récupère les statistiques d'un utilisateur
+     * Récupère les statistiques d'un utilisateur.
      */
     public function getUserStats(User $user): array
     {
@@ -131,7 +135,7 @@ class UserService
         $latestEntry = $this->weightEntryRepository->findLatestByUser($user);
         $totalWeightLoss = $this->weightEntryRepository->calculateTotalWeightLoss($user);
 
-        $currentWeight = $latestEntry ? $latestEntry->getWeight() : $user->getInitialWeight();
+        $currentWeight = $latestEntry instanceof \App\Entity\WeightEntry ? $latestEntry->getWeight() : $user->getInitialWeight();
         $bmi = $this->bmiCalculator->calculateBmiForUser($user);
         $bmiCategory = $this->bmiCalculator->getBmiCategory($bmi);
         $idealWeight = $this->bmiCalculator->calculateIdealWeight($user);
@@ -151,13 +155,13 @@ class UserService
             'bodyFatPercentage' => $bodyFatPercentage,
             'bmr' => $bmr,
             'totalEntries' => count($weightEntries),
-            'lastEntryDate' => $latestEntry ? $latestEntry->getDate() : null,
-            'daysSinceLastEntry' => $latestEntry ? (new \DateTimeImmutable())->diff($latestEntry->getDate())->days : null
+            'lastEntryDate' => $latestEntry instanceof \App\Entity\WeightEntry ? $latestEntry->getDate() : null,
+            'daysSinceLastEntry' => $latestEntry instanceof \App\Entity\WeightEntry && $latestEntry->getDate() !== null ? (new DateTimeImmutable())->diff($latestEntry->getDate())->days : null,
         ];
     }
 
     /**
-     * Calcule le pourcentage de progression vers l'objectif
+     * Calcule le pourcentage de progression vers l'objectif.
      */
     private function calculateProgressPercentage(User $user): float
     {
@@ -173,11 +177,12 @@ class UserService
         }
 
         $percentage = ($weightLost / $totalWeightToLose) * 100;
+
         return round(min(100, max(0, $percentage)), 1);
     }
 
     /**
-     * Récupère les utilisateurs avec un profil public
+     * Récupère les utilisateurs avec un profil public.
      */
     public function getPublicProfiles(): array
     {
@@ -185,15 +190,15 @@ class UserService
     }
 
     /**
-     * Vérifie si un utilisateur a atteint son objectif
+     * Vérifie si un utilisateur a atteint son objectif.
      */
     public function hasReachedGoal(User $user): bool
     {
         $latestEntry = $this->weightEntryRepository->findLatestByUser($user);
-        if (!$latestEntry) {
+        if (!$latestEntry instanceof \App\Entity\WeightEntry) {
             return false;
         }
 
         return $latestEntry->getWeight() <= $user->getTargetWeight();
     }
-} 
+}
