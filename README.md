@@ -1,221 +1,218 @@
-# 🏋️ API Peso - Suivi de perte de poids
+# 🏋️ Peso - Application de Suivi de Poids
 
-Application Symfony pour le suivi de perte de poids avec API REST et authentification JWT.
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
+[![Symfony Version](https://img.shields.io/badge/Symfony-7.3%2B-green.svg)](https://symfony.com)
+[![Vue.js Version](https://img.shields.io/badge/Vue.js-3.4%2B-brightgreen.svg)](https://vuejs.org)
+[![API Platform](https://img.shields.io/badge/API%20Platform-4.1%2B-orange.svg)](https://api-platform.com)
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
-## 🚀 Installation
+**Peso** est une application moderne de suivi de poids et de santé, construite avec une architecture hybride **Vue 3 + Symfony** utilisant l'approche "Islands Architecture".
 
-### Prérequis
-- Docker et Docker Compose installés
-- WSL2 configuré (pour Windows)
+## 🎯 Fonctionnalités
 
-### Démarrage rapide
+### 🔐 Authentification & Gestion des Utilisateurs
+- **Inscription/Connexion** avec JWT
+- **Profils utilisateurs** complets (âge, genre, taille, poids initial/objectif)
+- **Authentification hybride** : JWT pour l'API + Session pour les routes web
+- **Gestion des rôles** (ROLE_USER, ROLE_ADMIN)
 
-1. **Cloner le projet**
-```bash
-git clone <repository-url>
-cd peso
-```
+### 📊 Suivi de Poids
+- **Enregistrement des poids** avec dates et commentaires
+- **Calcul automatique du BMI** (Indice de Masse Corporelle)
+- **Graphiques de progression** avec Chart.js
+- **Statistiques détaillées** (perte totale, reste à perdre, objectifs)
 
-2. **Copier le fichier d'environnement**
-```bash
-cp env.example .env
-```
+### 🎨 Interface Utilisateur
+- **Design moderne** avec TailwindCSS
+- **Composants Vue 3** réactifs
+- **Interface responsive** (mobile-first)
+- **Graphiques interactifs** pour visualiser la progression
 
-3. **Lancer l'initialisation automatique**
-```bash
-./init-project.sh
-```
+### 🔧 Architecture Technique
+- **API REST** avec API Platform
+- **Validation des données** avec Symfony Validator
+- **Sécurité renforcée** avec Lexik JWT Bundle
+- **Base de données** PostgreSQL avec Doctrine ORM
 
-### Installation manuelle
+## 🏗️ Architecture
 
-Si vous préférez une installation manuelle :
+### Vue 3 + Symfony (Islands Architecture)
 
-1. **Construire les conteneurs**
-```bash
-docker-compose build
-```
-
-2. **Démarrer les services**
-```bash
-docker-compose up -d
-```
-
-3. **Créer le projet Symfony**
-```bash
-docker-compose exec php composer create-project symfony/skeleton:"6.4.*" . --no-interaction
-```
-
-4. **Installer les dépendances**
-```bash
-docker-compose exec php composer require api-platform/api-pack lexik/jwt-authentication-bundle symfony/mailer symfony/orm-pack symfony/security-bundle symfony/validator symfony/maker-bundle --dev symfony/profiler-pack --dev
-```
-
-5. **Configurer les permissions**
-```bash
-docker-compose exec php chmod -R 777 var/
-```
-
-6. **Générer les clés JWT**
-```bash
-docker-compose exec php mkdir -p config/jwt
-docker-compose exec php openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pass pass:your-super-secret-passphrase-change-in-production
-docker-compose exec php openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:your-super-secret-passphrase-change-in-production
-docker-compose exec php chmod 644 config/jwt/public.pem
-docker-compose exec php chmod 600 config/jwt/private.pem
-```
-
-## 🌐 Accès aux services
-
-- **Application Symfony** : http://localhost:8080
-- **Interface MailHog** : http://localhost:8025
-- **Base de données PostgreSQL** : localhost:5432
-  - Base : `peso_db`
-  - Utilisateur : `peso_user`
-  - Mot de passe : `peso_password`
-
-## 📁 Structure du projet
+L'application utilise une approche hybride innovante :
 
 ```
-peso/
-├── docker/                    # Configuration Docker
-│   ├── nginx/                # Configuration Nginx
-│   ├── php/                  # Configuration PHP
-│   └── postgres/             # Configuration PostgreSQL
-├── src/
-│   ├── Entity/               # Entités Doctrine
-│   ├── Controller/           # Contrôleurs API
-│   ├── Service/              # Services métiers
-│   └── Repository/           # Repositories
-├── config/                   # Configuration Symfony
-├── migrations/               # Migrations Doctrine
-├── public/                   # Point d'entrée web
-├── templates/                # Templates Twig
-├── tests/                    # Tests
-├── docker-compose.yml        # Orchestration Docker
-├── init-project.sh           # Script d'initialisation
-└── README.md                 # Documentation
+┌─────────────────────────────────────────────────────────────┐
+│                    Symfony (Backend)                        │
+├─────────────────────────────────────────────────────────────┤
+│  • API Platform (REST API)                                  │
+│  • Doctrine ORM (Base de données)                           │
+│  • JWT Authentication                                       │
+│  • Twig Templates (Pages web)                               │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Vue 3 (Frontend)                         │
+├─────────────────────────────────────────────────────────────┤
+│  • Islands Architecture                                     │
+│  • Composants montés conditionnellement                     │
+│  • Pinia (State Management)                                 │
+│  • TailwindCSS (Styling)                                    │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## 🔧 Configuration
+### Structure des Composants Vue
 
-### Variables d'environnement
-
-Copiez `env.example` vers `.env` et modifiez les valeurs selon votre environnement :
-
-```bash
-# Base de données
-DATABASE_URL="postgresql://peso_user:peso_password@postgres:5432/peso_db?serverVersion=15&charset=utf8"
-
-# JWT
-JWT_SECRET_KEY="your-super-secret-jwt-key-change-in-production"
-JWT_PASSPHRASE="your-super-secret-passphrase-change-in-production"
-
-# Email
-MAILER_DSN="smtp://mailhog:1025"
+```
+assets/
+├── components/
+│   ├── auth/           # Authentification
+│   │   ├── LoginForm.vue
+│   │   └── RegisterForm.vue
+│   ├── dashboard/      # Tableau de bord
+│   │   └── WeightProgressChart.vue
+│   ├── journal/        # Journal de poids
+│   │   └── JournalEntryForm.vue
+│   ├── shared/         # Composants réutilisables
+│   │   ├── BaseButton.vue
+│   │   ├── LoadingSpinner.vue
+│   │   └── Alert.vue
+│   └── social/         # Fonctionnalités sociales
+│       ├── FriendList.vue
+│       ├── Feed.vue
+│       └── ActivityCard.vue
+├── store/              # Gestion d'état Pinia
+│   └── modules/
+│       ├── auth.js
+│       └── weight.js
+└── utils/              # Utilitaires
+    ├── api.js          # Service API Axios
+    └── helpers.js      # Fonctions utilitaires
 ```
 
-## 🗄️ Base de données
+### Architecture Backend (DDD)
 
-### Créer les migrations
-```bash
-docker-compose exec php php bin/console make:migration
+```
+src/
+├── Controller/         # Contrôleurs (minimal)
+│   ├── Api/           # API REST
+│   └── WebController.php
+├── DataProvider/      # Logique métier
+│   ├── UserDataProvider.php
+│   └── WeightEntryDataProvider.php
+├── Transformer/       # Transformation des données
+│   ├── UserTransformer.php
+│   └── WeightEntryTransformer.php
+├── Service/           # Services métier
+│   ├── UserService.php
+│   ├── BmiCalculator.php
+│   └── LocaleService.php
+├── Response/          # Wrappers de réponse
+│   └── ApiResponseWrapper.php
+├── Factory/           # Factories
+│   └── PaginationMetadataFactory.php
+└── Entity/            # Entités Doctrine
+    ├── User.php
+    └── WeightEntry.php
 ```
 
-### Exécuter les migrations
-```bash
-docker-compose exec php php bin/console doctrine:migrations:migrate
-```
+## 🚀 Technologies Utilisées
 
-### Charger les fixtures (si disponibles)
-```bash
-docker-compose exec php php bin/console doctrine:fixtures:load
-```
+### Backend
+- **Symfony 7.3** - Framework PHP moderne
+- **API Platform 4.1** - Génération automatique d'API REST
+- **Doctrine ORM 3.5** - Mapping objet-relationnel
+- **PostgreSQL 15** - Base de données robuste
+- **Lexik JWT Bundle** - Authentification JWT
+- **Symfony Security** - Gestion de la sécurité
 
-## 🔐 Authentification JWT
+### Frontend
+- **Vue 3.4** - Framework JavaScript progressif
+- **Pinia 2.1** - Gestion d'état moderne
+- **TailwindCSS 3.4** - Framework CSS utilitaire
+- **Chart.js 4.4** - Graphiques interactifs
+- **Axios 1.6** - Client HTTP
+- **Webpack Encore** - Build system
 
-L'API utilise l'authentification JWT via le bundle LexikJWTAuthenticationBundle.
+### Outils de Développement
+- **Docker & Docker Compose** - Containerisation
+- **PHPStan** - Analyse statique PHP
+- **PHPUnit** - Tests unitaires
+- **PHP CS Fixer** - Formatage de code
+- **Psalm** - Analyse de types
+- **Deptrac** - Analyse d'architecture
 
-### Endpoints d'authentification
-- `POST /api/login` - Connexion utilisateur
-- `POST /api/register` - Inscription utilisateur
+## 📋 Fonctionnalités Détaillées
 
-### Utilisation des tokens
-Incluez le token JWT dans l'en-tête Authorization :
-```
-Authorization: Bearer <votre-token-jwt>
-```
+### 🔐 Système d'Authentification
+- **JWT Tokens** pour l'API REST
+- **Sessions Symfony** pour les routes web
+- **Conversion automatique** JWT → Session via EventListener
+- **Sécurité renforcée** avec validation des tokens
 
-## 📧 Emails
+### 📊 Gestion des Données de Poids
+- **Enregistrement** : poids, date, commentaires
+- **Calculs automatiques** : BMI, progression, statistiques
+- **Validation** : poids entre 20-500kg, dates cohérentes
+- **Autorisations** : chaque utilisateur ne voit que ses données
 
-L'application utilise Symfony Mailer avec MailHog pour le développement.
+### 🎨 Interface Utilisateur
+- **Design System** cohérent avec TailwindCSS
+- **Composants réutilisables** (BaseButton, Alert, LoadingSpinner)
+- **Graphiques interactifs** pour visualiser la progression
+- **Responsive Design** optimisé mobile/desktop
 
-- **SMTP** : localhost:1025
-- **Interface web** : http://localhost:8025
+### 🔧 API REST
+- **Endpoints standardisés** avec API Platform
+- **Réponses formatées** : `{ data: ..., metadata: ... }`
+- **Pagination automatique** avec métadonnées
+- **Validation des données** avec contraintes Symfony
+- **Documentation automatique** avec OpenAPI
 
-## 🧪 Tests
+## 🏛️ Principes d'Architecture
 
-```bash
-# Lancer les tests
-docker-compose exec php php bin/phpunit
+### Domain-Driven Design (DDD)
+- **Séparation des responsabilités** claire
+- **Logique métier** dans les services et data providers
+- **Contrôleurs minimaux** déléguant aux services
+- **Transformers** pour la présentation des données
 
-# Lancer les tests avec couverture
-docker-compose exec php php bin/phpunit --coverage-html var/coverage
-```
+### Clean Architecture
+- **Couches bien définies** : Controllers → Services → Repositories
+- **Injection de dépendances** via constructeur
+- **Tests unitaires** pour chaque couche
+- **Gestion d'erreurs** centralisée
 
-## 🛠️ Commandes utiles
+### Islands Architecture (Frontend)
+- **Composants Vue montés conditionnellement** dans les pages Twig
+- **Communication API** standardisée
+- **État global** géré avec Pinia
+- **Progressive Enhancement** : fonctionne sans JavaScript
 
-```bash
-# Accéder au conteneur PHP
-docker-compose exec php bash
+## 🔒 Sécurité
 
-# Vider le cache
-docker-compose exec php php bin/console cache:clear
+- **Authentification JWT** avec Lexik Bundle
+- **Validation des données** avec Symfony Validator
+- **Autorisations granulaires** par utilisateur
+- **Protection CSRF** sur les formulaires web
+- **Validation des entrées** côté serveur et client
 
-# Voir les routes
-docker-compose exec php php bin/console debug:router
+## 📈 Performance
 
-# Voir les services
-docker-compose exec php php bin/console debug:container
+- **Lazy Loading** des composants Vue
+- **Optimisation des requêtes** Doctrine
+- **Cache Symfony** pour les métadonnées
+- **Compression des assets** avec Webpack Encore
+- **Base de données optimisée** avec index appropriés
 
-# Créer une entité
-docker-compose exec php php bin/console make:entity
+## 🧪 Qualité du Code
 
-# Créer un contrôleur
-docker-compose exec php php bin/console make:controller
-```
+- **Tests unitaires** avec PHPUnit
+- **Analyse statique** avec PHPStan et Psalm
+- **Formatage automatique** avec PHP CS Fixer
+- **Analyse d'architecture** avec Deptrac
+- **Tests de mutation** avec Infection
 
-## 🚀 Déploiement
+---
 
-### Production
-
-1. Modifiez les variables d'environnement pour la production
-2. Utilisez un serveur SMTP réel au lieu de MailHog
-3. Configurez un reverse proxy (Nginx/Apache)
-4. Utilisez HTTPS
-5. Changez les clés JWT
-
-### Variables de production importantes
-```bash
-APP_ENV=prod
-APP_SECRET=<secret-production>
-JWT_SECRET_KEY=<jwt-secret-production>
-JWT_PASSPHRASE=<jwt-passphrase-production>
-MAILER_DSN=<smtp-production>
-```
-
-## 📝 API Documentation
-
-Une fois l'application démarrée, la documentation API Platform est disponible sur :
-- http://localhost:8080/api/docs
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créez une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails. 
+**Peso** représente une approche moderne du développement web, combinant la robustesse de Symfony avec la réactivité de Vue.js dans une architecture hybride innovante. 🚀 

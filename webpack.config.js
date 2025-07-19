@@ -77,4 +77,12 @@ Encore
     .enablePostCssLoader()
 ;
 
+// Configuration spécifique pour le développement Vue.js
+if (Encore.isDev()) {
+    Encore.addPlugin(new (require('webpack')).DefinePlugin({
+        __VUE_OPTIONS_API__: true,
+        __VUE_PROD_DEVTOOLS__: true, // Active Vue DevTools en développement
+    }));
+}
+
 module.exports = Encore.getWebpackConfig(); 
