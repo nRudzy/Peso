@@ -78,12 +78,22 @@ export default {
     const isLoading = ref(false);
     const error = ref('');
 
+    const setCookie = (name, value, days = 7) => {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+    };
+
     const handleSubmit = async () => {
       isLoading.value = true;
       error.value = '';
       
       try {
-        await authStore.login(form);
+        const response = await authStore.login(form);
+        
+        // Stocker le token dans un cookie pour les routes web
+        setCookie('jwt_token', response.data.token);
+        
         // Redirection après connexion réussie
         window.location.href = '/dashboard';
       } catch (err) {

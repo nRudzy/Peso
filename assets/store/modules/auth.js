@@ -107,6 +107,12 @@ export const useAuthStore = defineStore('auth', {
       this.token = null;
       this.error = null;
       storage.remove('jwt_token');
+      
+      // Supprimer le cookie
+      document.cookie = 'jwt_token=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+      
+      // Rediriger vers la page d'accueil
+      window.location.href = '/';
     },
 
     clearError() {

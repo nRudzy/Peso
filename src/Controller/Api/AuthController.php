@@ -193,4 +193,22 @@ class AuthController extends AbstractController
             );
         }
     }
+
+    #[Route('/check', name: 'api_auth_check', methods: ['GET'])]
+    public function check(#[CurrentUser] ?User $user): Response
+    {
+        if (!$user instanceof \App\Entity\User) {
+            return ApiResponseWrapper::error(
+                $this->localeService->trans('errors.authentication.required', [], 'api'),
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
+
+        $transformedData = $this->userTransformer->transformOwn($user);
+
+        return ApiResponseWrapper::success([
+            'authenticated' => true,
+            'user' => $transformedData,
+        ]);
+    }
 }

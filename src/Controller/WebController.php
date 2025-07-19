@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class WebController extends AbstractController
 {
@@ -66,7 +67,13 @@ class WebController extends AbstractController
     #[Route('/logout', name: 'app_logout')]
     public function logout(): Response
     {
-        // Cette route sera gérée par le firewall de sécurité
-        throw new \Exception('Cette méthode peut être vide - elle sera interceptée par la configuration de sécurité');
+        // Créer une réponse de redirection
+        $response = $this->redirectToRoute('app_home');
+        
+        // Supprimer le cookie JWT
+        $cookie = new Cookie('jwt_token', '', time() - 3600, '/', null, false, false);
+        $response->headers->setCookie($cookie);
+        
+        return $response;
     }
 } 
