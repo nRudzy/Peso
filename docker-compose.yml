@@ -12,7 +12,7 @@ services:
     depends_on:
       - postgres
     environment:
-      - DATABASE_URL=postgresql://peso_user:peso_password@postgres:5432/peso_db
+      - DATABASE_URL=sqlite:///var/www/html/var/data.db
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-in-production}
       - JWT_PASSPHRASE=${JWT_PASSPHRASE:-your-super-secret-passphrase-change-in-production}
       - MAILER_DSN=${MAILER_DSN:-smtp://mailhog:1025}

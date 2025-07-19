@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: WeightEntryRepository::class)]
+#[ORM\Table(name: 'weight_entry')]
 #[ApiResource(
     operations: [
         new Get(security: 'object.user == user'),

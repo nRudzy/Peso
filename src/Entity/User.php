@@ -21,17 +21,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource(
-    operations: [
-        new Get(security: 'object == user or object.isProfilePublic()'),
-        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
-        new Post(security: "is_granted('PUBLIC_ACCESS')"),
-        new Put(security: 'object == user'),
-        new Delete(security: "is_granted('ROLE_ADMIN')"),
-    ],
-    normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']]
-)]
+#[ORM\Table(name: 'user')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]

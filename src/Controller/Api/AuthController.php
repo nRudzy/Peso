@@ -10,6 +10,7 @@ use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +27,8 @@ class AuthController extends AbstractController
         private readonly UserService $userService,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly LocaleService $localeService
+        private readonly LocaleService $localeService,
+        private readonly JWTTokenManagerInterface $jwtManager
     ) {
     }
 
@@ -64,9 +66,10 @@ class AuthController extends AbstractController
             ], Response::HTTP_CREATED);
         } catch (InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
-        } catch (Exception) {
+        } catch (Exception $e) {
             return new JsonResponse([
                 'error' => $this->localeService->trans('errors.server.internal_error', [], 'api'),
+                'message' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -90,9 +93,12 @@ class AuthController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Note: In a real application, generate a JWT token here
+        // Generate JWT token
+        $token = $this->jwtManager->create($user);
+
         return new JsonResponse([
             'message' => $this->localeService->trans('endpoints.login.success', [], 'api'),
+            'token' => $token,
             'user' => [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
@@ -197,7 +203,7 @@ class AuthController extends AbstractController
             ]);
         } catch (InvalidArgumentException $e) {
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
-        } catch (Exception) {
+        } catch (Exception $e) {
             return new JsonResponse(['error' => 'Erreur lors de la mise à jour du profil'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
