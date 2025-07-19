@@ -60,7 +60,8 @@ export default {
   components: {
     BaseButton,
   },
-  setup() {
+  emits: ['entry-created'],
+  setup(props, { emit }) {
     const weightStore = useWeightStore();
     const form = reactive({
       weight: null,
@@ -81,7 +82,7 @@ export default {
         form.date = new Date().toISOString().split('T')[0];
         
         // Émettre un événement de succès
-        this.$emit('entry-created');
+        emit('entry-created');
       } catch (err) {
         console.error('Erreur lors de l\'ajout:', err);
       } finally {
