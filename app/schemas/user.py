@@ -25,6 +25,11 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
 
 
+class UserCreateDB(UserBase):
+    """Schema for user creation in database (with hashed password)"""
+    hashed_password: str
+
+
 class UserUpdate(BaseModel):
     """Schema for user updates"""
     first_name: Optional[str] = None

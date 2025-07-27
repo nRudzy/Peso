@@ -52,8 +52,17 @@ class AuthService:
         user = self.user_service.create_user(register_data)
 
         # Send verification email
-        verification_token = generate_verification_token()
-        self.email_service.send_verification_email(user.email, verification_token)
+        verification_token = create_access_token(
+            data={"sub": str(user.id), "type": "email_verification"},
+            expires_delta=timedelta(hours=24)
+        )
+        # Note: In a real app, you'd want to make this async
+        import asyncio
+        try:
+            asyncio.create_task(self.email_service.send_verification_email(user.email, verification_token))
+        except Exception as e:
+            # Log error but don't fail registration
+            print(f"Failed to send verification email: {e}")
 
         return user
 

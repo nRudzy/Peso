@@ -16,6 +16,11 @@ class WeightEntryCreate(WeightEntryBase):
     pass
 
 
+class WeightEntryCreateDB(WeightEntryBase):
+    """Schema for weight entry creation in database (with user_id)"""
+    user_id: int
+
+
 class WeightEntryUpdate(BaseModel):
     """Schema for weight entry updates"""
     weight: Optional[float] = Field(None, ge=0)

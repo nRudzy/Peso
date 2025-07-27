@@ -57,6 +57,47 @@ async def get_weight_entries(
     )
 
 
+@router.get("/weight-entries/latest", response_model=WeightEntryResponse)
+async def get_latest_weight_entry(
+    current_user = Depends(get_current_verified_user),
+    db: Session = Depends(get_db)
+):
+    """Get the most recent weight entry"""
+    weight_service = WeightEntryService(db)
+    entry = weight_service.get_latest_weight_entry(current_user.id)
+    
+    if not entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No weight entries found"
+        )
+    
+    return entry
+
+
+@router.get("/weight-entries/statistics", response_model=dict)
+async def get_weight_statistics(
+    current_user = Depends(get_current_verified_user),
+    db: Session = Depends(get_db)
+):
+    """Get weight statistics for current user"""
+    weight_service = WeightEntryService(db)
+    statistics = weight_service.get_weight_statistics(current_user.id)
+    return statistics
+
+
+@router.get("/weight-entries/progress/{days}", response_model=dict)
+async def get_weight_progress(
+    days: int,
+    current_user = Depends(get_current_verified_user),
+    db: Session = Depends(get_db)
+):
+    """Get weight progress over a period"""
+    weight_service = WeightEntryService(db)
+    progress = weight_service.get_weight_progress(current_user.id, days)
+    return progress
+
+
 @router.get("/weight-entries/{entry_id}", response_model=WeightEntryResponse)
 async def get_weight_entry(
     entry_id: int,
@@ -112,45 +153,4 @@ async def delete_weight_entry(
             detail="Weight entry not found"
         )
     
-    return BaseResponse(message="Weight entry deleted successfully")
-
-
-@router.get("/weight-entries/latest", response_model=WeightEntryResponse)
-async def get_latest_weight_entry(
-    current_user = Depends(get_current_verified_user),
-    db: Session = Depends(get_db)
-):
-    """Get the most recent weight entry"""
-    weight_service = WeightEntryService(db)
-    entry = weight_service.get_latest_weight_entry(current_user.id)
-    
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No weight entries found"
-        )
-    
-    return entry
-
-
-@router.get("/weight-entries/progress/{days}", response_model=dict)
-async def get_weight_progress(
-    days: int,
-    current_user = Depends(get_current_verified_user),
-    db: Session = Depends(get_db)
-):
-    """Get weight progress over a period"""
-    weight_service = WeightEntryService(db)
-    progress = weight_service.get_weight_progress(current_user.id, days)
-    return progress
-
-
-@router.get("/weight-entries/statistics", response_model=dict)
-async def get_weight_statistics(
-    current_user = Depends(get_current_verified_user),
-    db: Session = Depends(get_db)
-):
-    """Get weight statistics for current user"""
-    weight_service = WeightEntryService(db)
-    statistics = weight_service.get_weight_statistics(current_user.id)
-    return statistics 
+    return BaseResponse(message="Weight entry deleted successfully") 

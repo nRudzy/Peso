@@ -8,15 +8,19 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     def __init__(self):
+        # Configure email settings based on environment
+        use_credentials = bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
+        use_tls = settings.SMTP_HOST != "mailhog"  # Disable TLS for MailHog
+        
         self.conf = ConnectionConfig(
             MAIL_USERNAME=settings.SMTP_USER,
             MAIL_PASSWORD=settings.SMTP_PASSWORD,
             MAIL_FROM=settings.FROM_EMAIL,
             MAIL_PORT=settings.SMTP_PORT,
             MAIL_SERVER=settings.SMTP_HOST,
-            MAIL_STARTTLS=True,
+            MAIL_STARTTLS=use_tls,
             MAIL_SSL_TLS=False,
-            USE_CREDENTIALS=True
+            USE_CREDENTIALS=use_credentials
         )
         self.fastmail = FastMail(self.conf)
 

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas.user import UserCreate, UserUpdate, UserCreateDB
 from app.core.security import get_password_hash, verify_password
 from app.repositories.user_repository import UserRepository
 from app.core.exceptions import UserNotFoundException, UserAlreadyExistsException
@@ -31,7 +31,7 @@ class UserService:
         user_dict['hashed_password'] = get_password_hash(user_data.password)
         del user_dict['password']
         
-        return self.repository.create(UserCreate(**user_dict))
+        return self.repository.create(UserCreateDB(**user_dict))
 
     def update_user(self, user_id: int, user_data: UserUpdate) -> User:
         """Update user information"""

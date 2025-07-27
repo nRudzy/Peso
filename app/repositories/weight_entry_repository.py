@@ -4,10 +4,10 @@ from sqlalchemy import and_, desc
 from datetime import datetime
 from app.repositories.base import BaseRepository
 from app.models.weight_entry import WeightEntry
-from app.schemas.weight_entry import WeightEntryCreate, WeightEntryUpdate
+from app.schemas.weight_entry import WeightEntryCreate, WeightEntryUpdate, WeightEntryCreateDB
 
 
-class WeightEntryRepository(BaseRepository[WeightEntry, WeightEntryCreate, WeightEntryUpdate]):
+class WeightEntryRepository(BaseRepository[WeightEntry, WeightEntryCreateDB, WeightEntryUpdate]):
     """Weight entry repository with specific weight operations"""
     
     def __init__(self, db: Session):

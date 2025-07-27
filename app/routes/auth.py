@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.auth import (
@@ -53,7 +53,7 @@ async def login(
     )
 
 
-@router.post("/auth/refresh", response_model=TokenResponse)
+@router.post("/auth/refresh", response_model=TokenResponse, tags=[RouteTagsEnum.AUTHENTICATION])
 async def refresh_token(
     refresh_data: RefreshTokenRequest,
     db: Session = Depends(get_db)
@@ -75,7 +75,7 @@ async def refresh_token(
     )
 
 
-@router.post("/auth/verify-email", response_model=BaseResponse)
+@router.post("/auth/verify-email", response_model=BaseResponse, tags=[RouteTagsEnum.AUTHENTICATION])
 async def verify_email(
     verification_data: EmailVerificationRequest,
     db: Session = Depends(get_db)
@@ -93,7 +93,7 @@ async def verify_email(
     return BaseResponse(message="Email verified successfully")
 
 
-@router.post("/auth/forgot-password", response_model=BaseResponse)
+@router.post("/auth/forgot-password", response_model=BaseResponse, tags=[RouteTagsEnum.AUTHENTICATION])
 async def forgot_password(
     forgot_data: ForgotPasswordRequest,
     db: Session = Depends(get_db)
@@ -111,7 +111,7 @@ async def forgot_password(
     )
 
 
-@router.post("/auth/reset-password", response_model=BaseResponse)
+@router.post("/auth/reset-password", response_model=BaseResponse, tags=[RouteTagsEnum.AUTHENTICATION])
 async def reset_password(
     reset_data: ResetPasswordRequest,
     db: Session = Depends(get_db)

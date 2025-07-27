@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from datetime import datetime, timedelta
 from app.models.weight_entry import WeightEntry
-from app.schemas.weight_entry import WeightEntryCreate, WeightEntryUpdate
+from app.schemas.weight_entry import WeightEntryCreate, WeightEntryUpdate, WeightEntryCreateDB
 from app.repositories.weight_entry_repository import WeightEntryRepository
 from app.core.exceptions import WeightEntryNotFoundException
 
@@ -20,7 +20,7 @@ class WeightEntryService:
         """Create a new weight entry"""
         entry_dict = entry_data.dict()
         entry_dict['user_id'] = user_id
-        return self.repository.create(WeightEntryCreate(**entry_dict))
+        return self.repository.create(WeightEntryCreateDB(**entry_dict))
 
     def update_weight_entry(self, entry_id: int, user_id: int, entry_data: WeightEntryUpdate) -> WeightEntry:
         """Update weight entry"""

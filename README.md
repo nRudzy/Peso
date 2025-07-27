@@ -10,6 +10,8 @@ Une API REST moderne et performante pour le suivi de perte de poids, développé
 - **Vérification d'email** à l'inscription
 - **Réinitialisation de mot de passe** par email
 - **API documentée** avec Swagger/OpenAPI
+- **Export collection Postman** prête à l'emploi
+- **Page de documentation personnalisée** avec interface moderne
 - **Architecture modulaire** avec séparation des responsabilités
 - **100% dockerisé** pour un déploiement facile
 
@@ -90,6 +92,8 @@ app/
    - API: http://localhost:8000
    - Documentation Swagger: http://localhost:8000/docs
    - Documentation ReDoc: http://localhost:8000/redoc
+   - Documentation personnalisée: http://localhost:8000/docs/custom
+   - Export collection Postman: http://localhost:8000/export/swagger-collection
 
 ### Variables d'environnement
 
@@ -112,6 +116,12 @@ FROM_EMAIL=votre-email@gmail.com
 ```
 
 ## 📚 API Endpoints
+
+### Documentation et Export
+- `GET /docs` - Documentation Swagger interactive
+- `GET /redoc` - Documentation ReDoc
+- `GET /docs/custom` - Page de documentation personnalisée avec bouton d'export
+- `GET /export/swagger-collection` - Export collection Postman prête à l'emploi
 
 ### Authentification
 - `POST /api/v1/auth/register` - Inscription utilisateur
@@ -202,6 +212,34 @@ alembic downgrade -1
 alembic current
 alembic history
 ```
+
+## 📥 Export Collection Swagger
+
+L'API inclut une fonctionnalité d'export automatique de collection Postman :
+
+### Export via Interface Web
+- Accédez à http://localhost:8000/docs/custom
+- Cliquez sur le bouton "📥 Télécharger Collection Postman"
+- La collection sera téléchargée au format JSON
+
+### Export Direct
+- Endpoint : `GET /export/swagger-collection`
+- Retourne un fichier JSON compatible Postman
+- Inclut tous les endpoints avec exemples et authentification
+
+### Fonctionnalités de la Collection
+- **Organisation par tags** : Authentication, Users, Weight Entries
+- **Variables d'environnement** : base_url, auth_token
+- **Authentification Bearer** configurée automatiquement
+- **Exemples de requêtes** avec données de test
+- **Paramètres de requête** et variables de chemin
+- **Headers** et Content-Type configurés
+
+### Utilisation de la Collection
+1. Importez le fichier JSON dans Postman
+2. Configurez la variable `base_url` selon votre environnement
+3. Utilisez l'endpoint de login pour obtenir un token
+4. Le token sera automatiquement utilisé pour les requêtes authentifiées
 
 ## 📊 Format des Réponses
 
