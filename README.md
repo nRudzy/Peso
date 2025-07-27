@@ -1,218 +1,303 @@
-# 🏋️ Peso - Application de Suivi de Poids
+# Peso - API de Suivi de Perte de Poids
 
-[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
-[![Symfony Version](https://img.shields.io/badge/Symfony-7.3%2B-green.svg)](https://symfony.com)
-[![Vue.js Version](https://img.shields.io/badge/Vue.js-3.4%2B-brightgreen.svg)](https://vuejs.org)
-[![API Platform](https://img.shields.io/badge/API%20Platform-4.1%2B-orange.svg)](https://api-platform.com)
-[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+Une API REST moderne et performante pour le suivi de perte de poids, développée avec FastAPI et PostgreSQL.
 
-**Peso** est une application moderne de suivi de poids et de santé, construite avec une architecture hybride **Vue 3 + Symfony** utilisant l'approche "Islands Architecture".
+## 🚀 Fonctionnalités
 
-## 🎯 Fonctionnalités
+- **Authentification JWT** avec tokens d'accès et de rafraîchissement
+- **Gestion des utilisateurs** avec profils personnalisables
+- **Suivi des entrées de poids** avec historique et statistiques
+- **Vérification d'email** à l'inscription
+- **Réinitialisation de mot de passe** par email
+- **API documentée** avec Swagger/OpenAPI
+- **Architecture modulaire** avec séparation des responsabilités
+- **100% dockerisé** pour un déploiement facile
 
-### 🔐 Authentification & Gestion des Utilisateurs
-- **Inscription/Connexion** avec JWT
-- **Profils utilisateurs** complets (âge, genre, taille, poids initial/objectif)
-- **Authentification hybride** : JWT pour l'API + Session pour les routes web
-- **Gestion des rôles** (ROLE_USER, ROLE_ADMIN)
+## 🛠️ Technologies
 
-### 📊 Suivi de Poids
-- **Enregistrement des poids** avec dates et commentaires
-- **Calcul automatique du BMI** (Indice de Masse Corporelle)
-- **Graphiques de progression** avec Chart.js
-- **Statistiques détaillées** (perte totale, reste à perdre, objectifs)
+- **Backend**: FastAPI (Python 3.11)
+- **Base de données**: PostgreSQL 15
+- **ORM**: SQLAlchemy 2.0
+- **Authentification**: JWT (PyJWT)
+- **Migrations**: Alembic
+- **Tests**: Pytest
+- **Emails**: FastAPI-Mail
+- **Conteneurisation**: Docker & Docker Compose
 
-### 🎨 Interface Utilisateur
-- **Design moderne** avec TailwindCSS
-- **Composants Vue 3** réactifs
-- **Interface responsive** (mobile-first)
-- **Graphiques interactifs** pour visualiser la progression
-
-### 🔧 Architecture Technique
-- **API REST** avec API Platform
-- **Validation des données** avec Symfony Validator
-- **Sécurité renforcée** avec Lexik JWT Bundle
-- **Base de données** PostgreSQL avec Doctrine ORM
-
-## 🏗️ Architecture
-
-### Vue 3 + Symfony (Islands Architecture)
-
-L'application utilise une approche hybride innovante :
+## 📁 Structure du Projet
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Symfony (Backend)                        │
-├─────────────────────────────────────────────────────────────┤
-│  • API Platform (REST API)                                  │
-│  • Doctrine ORM (Base de données)                           │
-│  • JWT Authentication                                       │
-│  • Twig Templates (Pages web)                               │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Vue 3 (Frontend)                         │
-├─────────────────────────────────────────────────────────────┤
-│  • Islands Architecture                                     │
-│  • Composants montés conditionnellement                     │
-│  • Pinia (State Management)                                 │
-│  • TailwindCSS (Styling)                                    │
-└─────────────────────────────────────────────────────────────┘
+app/
+├── main.py                   # Point d'entrée FastAPI
+├── core/                    # Configuration et utilitaires
+│   ├── config.py           # Paramètres de l'application
+│   ├── database.py         # Configuration base de données
+│   ├── security.py         # Utilitaires de sécurité
+│   └── dependencies.py     # Dépendances FastAPI
+├── models/                  # Modèles SQLAlchemy
+│   ├── user.py             # Modèle utilisateur
+│   └── weight_entry.py     # Modèle entrée de poids
+├── schemas/                 # Schémas Pydantic
+│   ├── common.py           # Schémas communs
+│   ├── user.py             # Schémas utilisateur
+│   ├── auth.py             # Schémas authentification
+│   └── weight_entry.py     # Schémas entrée de poids
+├── services/                # Logique métier
+│   ├── user_service.py     # Service utilisateur
+│   ├── auth_service.py     # Service authentification
+│   ├── weight_entry_service.py # Service entrées de poids
+│   └── email_service.py    # Service emails
+├── routes/                  # Routes API
+│   ├── auth.py             # Routes authentification
+│   ├── users.py            # Routes utilisateurs
+│   └── weight_entries.py   # Routes entrées de poids
+├── utils/                   # Utilitaires
+│   ├── pagination.py       # Utilitaires pagination
+│   ├── token_generator.py  # Générateurs de tokens
+│   └── bmi_calculator.py   # Calculs IMC
+└── tests/                   # Tests unitaires
+    ├── conftest.py         # Configuration tests
+    └── test_auth.py        # Tests authentification
 ```
 
-### Structure des Composants Vue
+## 🐳 Installation avec Docker
 
-```
-assets/
-├── components/
-│   ├── auth/           # Authentification
-│   │   ├── LoginForm.vue
-│   │   └── RegisterForm.vue
-│   ├── dashboard/      # Tableau de bord
-│   │   └── WeightProgressChart.vue
-│   ├── journal/        # Journal de poids
-│   │   └── JournalEntryForm.vue
-│   ├── shared/         # Composants réutilisables
-│   │   ├── BaseButton.vue
-│   │   ├── LoadingSpinner.vue
-│   │   └── Alert.vue
-│   └── social/         # Fonctionnalités sociales
-│       ├── FriendList.vue
-│       ├── Feed.vue
-│       └── ActivityCard.vue
-├── store/              # Gestion d'état Pinia
-│   └── modules/
-│       ├── auth.js
-│       └── weight.js
-└── utils/              # Utilitaires
-    ├── api.js          # Service API Axios
-    └── helpers.js      # Fonctions utilitaires
-```
+### Prérequis
 
-### Architecture Backend (DDD)
+- Docker
+- Docker Compose
 
-```
-src/
-├── Controller/         # Contrôleurs (minimal)
-│   ├── Api/           # API REST
-│   └── WebController.php
-├── DataProvider/      # Logique métier
-│   ├── UserDataProvider.php
-│   └── WeightEntryDataProvider.php
-├── Transformer/       # Transformation des données
-│   ├── UserTransformer.php
-│   └── WeightEntryTransformer.php
-├── Service/           # Services métier
-│   ├── UserService.php
-│   ├── BmiCalculator.php
-│   └── LocaleService.php
-├── Response/          # Wrappers de réponse
-│   └── ApiResponseWrapper.php
-├── Factory/           # Factories
-│   └── PaginationMetadataFactory.php
-└── Entity/            # Entités Doctrine
-    ├── User.php
-    └── WeightEntry.php
+### Démarrage rapide
+
+1. **Cloner le projet**
+   ```bash
+   git clone <repository-url>
+   cd peso
+   ```
+
+2. **Configurer les variables d'environnement**
+   ```bash
+   cp env.example .env
+   # Éditer .env avec vos paramètres
+   ```
+
+3. **Lancer l'application**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Accéder à l'API**
+   - API: http://localhost:8000
+   - Documentation Swagger: http://localhost:8000/docs
+   - Documentation ReDoc: http://localhost:8000/redoc
+
+### Variables d'environnement
+
+Copiez `env.example` vers `.env` et configurez :
+
+```env
+# Base de données
+DATABASE_URL=postgresql://peso_user:peso_password@db:5432/peso_db
+
+# Sécurité
+SECRET_KEY=votre-clé-secrète-très-sécurisée
+ALGORITHM=HS256
+
+# Email (pour la vérification et réinitialisation)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=votre-email@gmail.com
+SMTP_PASSWORD=votre-mot-de-passe-app
+FROM_EMAIL=votre-email@gmail.com
 ```
 
-## 🚀 Technologies Utilisées
+## 📚 API Endpoints
 
-### Backend
-- **Symfony 7.3** - Framework PHP moderne
-- **API Platform 4.1** - Génération automatique d'API REST
-- **Doctrine ORM 3.5** - Mapping objet-relationnel
-- **PostgreSQL 15** - Base de données robuste
-- **Lexik JWT Bundle** - Authentification JWT
-- **Symfony Security** - Gestion de la sécurité
+### Authentification
+- `POST /api/v1/auth/register` - Inscription utilisateur
+- `POST /api/v1/auth/login` - Connexion
+- `POST /api/v1/auth/refresh` - Rafraîchir token
+- `POST /api/v1/auth/verify-email` - Vérifier email
+- `POST /api/v1/auth/forgot-password` - Mot de passe oublié
+- `POST /api/v1/auth/reset-password` - Réinitialiser mot de passe
 
-### Frontend
-- **Vue 3.4** - Framework JavaScript progressif
-- **Pinia 2.1** - Gestion d'état moderne
-- **TailwindCSS 3.4** - Framework CSS utilitaire
-- **Chart.js 4.4** - Graphiques interactifs
-- **Axios 1.6** - Client HTTP
-- **Webpack Encore** - Build system
+### Utilisateurs
+- `GET /api/v1/users/me` - Profil utilisateur actuel
+- `PUT /api/v1/users/me` - Modifier profil
+- `POST /api/v1/users/me/change-password` - Changer mot de passe
+- `DELETE /api/v1/users/me` - Désactiver compte
+- `GET /api/v1/users` - Liste des utilisateurs (paginated)
+- `GET /api/v1/users/{user_id}` - Profil public utilisateur
 
-### Outils de Développement
-- **Docker & Docker Compose** - Containerisation
-- **PHPStan** - Analyse statique PHP
-- **PHPUnit** - Tests unitaires
-- **PHP CS Fixer** - Formatage de code
-- **Psalm** - Analyse de types
-- **Deptrac** - Analyse d'architecture
+### Entrées de Poids
+- `POST /api/v1/weight-entries` - Créer entrée
+- `GET /api/v1/weight-entries` - Liste des entrées (paginated)
+- `GET /api/v1/weight-entries/{entry_id}` - Détails entrée
+- `PUT /api/v1/weight-entries/{entry_id}` - Modifier entrée
+- `DELETE /api/v1/weight-entries/{entry_id}` - Supprimer entrée
+- `GET /api/v1/weight-entries/latest` - Dernière entrée
+- `GET /api/v1/weight-entries/progress/{days}` - Progression
+- `GET /api/v1/weight-entries/statistics` - Statistiques
 
-## 📋 Fonctionnalités Détaillées
+## 🧪 Tests
 
-### 🔐 Système d'Authentification
-- **JWT Tokens** pour l'API REST
-- **Sessions Symfony** pour les routes web
-- **Conversion automatique** JWT → Session via EventListener
-- **Sécurité renforcée** avec validation des tokens
+### Lancer les tests
+```bash
+# Avec Docker
+docker-compose exec web pytest
 
-### 📊 Gestion des Données de Poids
-- **Enregistrement** : poids, date, commentaires
-- **Calculs automatiques** : BMI, progression, statistiques
-- **Validation** : poids entre 20-500kg, dates cohérentes
-- **Autorisations** : chaque utilisateur ne voit que ses données
+# Localement
+pytest
+```
 
-### 🎨 Interface Utilisateur
-- **Design System** cohérent avec TailwindCSS
-- **Composants réutilisables** (BaseButton, Alert, LoadingSpinner)
-- **Graphiques interactifs** pour visualiser la progression
-- **Responsive Design** optimisé mobile/desktop
+### Couverture des tests
+```bash
+pytest --cov=app --cov-report=html
+```
 
-### 🔧 API REST
-- **Endpoints standardisés** avec API Platform
-- **Réponses formatées** : `{ data: ..., metadata: ... }`
-- **Pagination automatique** avec métadonnées
-- **Validation des données** avec contraintes Symfony
-- **Documentation automatique** avec OpenAPI
+## 🔧 Développement
 
-## 🏛️ Principes d'Architecture
+### Installation locale
 
-### Domain-Driven Design (DDD)
-- **Séparation des responsabilités** claire
-- **Logique métier** dans les services et data providers
-- **Contrôleurs minimaux** déléguant aux services
-- **Transformers** pour la présentation des données
+1. **Créer un environnement virtuel**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   # ou
+   venv\Scripts\activate     # Windows
+   ```
 
-### Clean Architecture
-- **Couches bien définies** : Controllers → Services → Repositories
-- **Injection de dépendances** via constructeur
-- **Tests unitaires** pour chaque couche
-- **Gestion d'erreurs** centralisée
+2. **Installer les dépendances**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Islands Architecture (Frontend)
-- **Composants Vue montés conditionnellement** dans les pages Twig
-- **Communication API** standardisée
-- **État global** géré avec Pinia
-- **Progressive Enhancement** : fonctionne sans JavaScript
+3. **Configurer la base de données**
+   ```bash
+   # Créer les migrations
+   alembic revision --autogenerate -m "Initial migration"
+   
+   # Appliquer les migrations
+   alembic upgrade head
+   ```
 
-## 🔒 Sécurité
+4. **Lancer l'application**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-- **Authentification JWT** avec Lexik Bundle
-- **Validation des données** avec Symfony Validator
-- **Autorisations granulaires** par utilisateur
-- **Protection CSRF** sur les formulaires web
-- **Validation des entrées** côté serveur et client
+### Commandes utiles
+
+```bash
+# Générer une nouvelle migration
+alembic revision --autogenerate -m "Description"
+
+# Appliquer les migrations
+alembic upgrade head
+
+# Annuler la dernière migration
+alembic downgrade -1
+
+# Voir l'état des migrations
+alembic current
+alembic history
+```
+
+## 📊 Format des Réponses
+
+Toutes les réponses suivent un format standardisé :
+
+### Réponse simple
+```json
+{
+  "message": "Opération réussie",
+  "success": true
+}
+```
+
+### Réponse paginée
+```json
+{
+  "data": [...],
+  "metadata": {
+    "page": 1,
+    "limit": 20,
+    "total": 58,
+    "total_pages": 3
+  }
+}
+```
+
+### Réponse d'erreur
+```json
+{
+  "message": "Description de l'erreur",
+  "success": false,
+  "error_code": "ERROR_CODE",
+  "details": {...}
+}
+```
+
+## 🔐 Sécurité
+
+- **JWT** pour l'authentification
+- **Mots de passe hashés** avec bcrypt
+- **CORS** configuré
+- **Validation des données** avec Pydantic
+- **Protection contre les injections SQL** avec SQLAlchemy
+- **Tokens d'expiration** configurés
 
 ## 📈 Performance
 
-- **Lazy Loading** des composants Vue
-- **Optimisation des requêtes** Doctrine
-- **Cache Symfony** pour les métadonnées
-- **Compression des assets** avec Webpack Encore
-- **Base de données optimisée** avec index appropriés
+- **FastAPI** pour des performances optimales
+- **Pool de connexions** PostgreSQL
+- **Pagination** sur toutes les listes
+- **Index de base de données** optimisés
+- **Cache** possible avec Redis (à implémenter)
 
-## 🧪 Qualité du Code
+## 🚀 Déploiement
 
-- **Tests unitaires** avec PHPUnit
-- **Analyse statique** avec PHPStan et Psalm
-- **Formatage automatique** avec PHP CS Fixer
-- **Analyse d'architecture** avec Deptrac
-- **Tests de mutation** avec Infection
+### Production
 
----
+1. **Modifier les variables d'environnement**
+   ```env
+   DEBUG=false
+   SECRET_KEY=clé-très-sécurisée-en-production
+   ```
 
-**Peso** représente une approche moderne du développement web, combinant la robustesse de Symfony avec la réactivité de Vue.js dans une architecture hybride innovante. 🚀 
+2. **Configurer un reverse proxy** (Nginx)
+3. **Configurer SSL/TLS**
+4. **Sauvegarder la base de données**
+5. **Monitoring et logs**
+
+### Docker Production
+```bash
+# Build optimisé
+docker build -t peso-api .
+
+# Lancer avec variables d'environnement
+docker run -d \
+  -p 8000:8000 \
+  -e DATABASE_URL=... \
+  -e SECRET_KEY=... \
+  peso-api
+```
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 🆘 Support
+
+Pour toute question ou problème :
+- Ouvrir une issue sur GitHub
+- Consulter la documentation API : http://localhost:8000/docs
+- Vérifier les logs : `docker-compose logs web` 
