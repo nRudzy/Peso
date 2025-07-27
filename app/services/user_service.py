@@ -27,7 +27,7 @@ class UserService:
             raise UserAlreadyExistsException(user_data.email)
         
         # Create user data with hashed password
-        user_dict = user_data.dict()
+        user_dict = user_data.model_dump()
         user_dict['hashed_password'] = get_password_hash(user_data.password)
         del user_dict['password']
         

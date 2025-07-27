@@ -1,7 +1,9 @@
 import pytest
+import tempfile
+import os
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.main import app
@@ -11,18 +13,43 @@ from app.services.user_service import UserService
 from app.schemas.user import UserCreate
 
 
-# Create in-memory SQLite database for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Create temporary SQLite database for testing
+@pytest.fixture(scope="session")
+def test_db_path():
+    """Create a temporary database file for testing"""
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+        return tmp.name
 
 
-def override_get_db():
+@pytest.fixture(scope="session")
+def engine(test_db_path):
+    """Create database engine for testing"""
+    SQLALCHEMY_DATABASE_URL = f"sqlite:///{test_db_path}"
+    
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+    
+    yield engine
+    
+    # Clean up
+    engine.dispose()
+    if os.path.exists(test_db_path):
+        os.unlink(test_db_path)
+
+
+@pytest.fixture(scope="session")
+def TestingSessionLocal(engine):
+    """Create session factory for testing"""
+    return sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def override_get_db(TestingSessionLocal):
     """Override database dependency for testing"""
     try:
         db = TestingSessionLocal()
@@ -31,46 +58,47 @@ def override_get_db():
         db.close()
 
 
-# Override the database dependency
-app.dependency_overrides[get_db] = override_get_db
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_database():
-    """Setup database once for all tests"""
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
+@pytest.fixture(scope="session")
+def app_with_db(TestingSessionLocal):
+    """Override app dependencies with test database"""
+    app.dependency_overrides[get_db] = lambda: override_get_db(TestingSessionLocal)
+    yield app
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture(autouse=True)
-def clean_database():
+def clean_database(engine):
     """Clean database before each test"""
-    # Clean all tables before each test
     with engine.begin() as conn:
+        # Disable foreign key constraints for SQLite
+        conn.execute("PRAGMA foreign_keys=OFF")
+        
         # Get all table names
         tables = Base.metadata.tables.keys()
         
         # Delete all data from all tables
         for table_name in tables:
-            conn.execute(text(f"DELETE FROM {table_name}"))
+            conn.execute(f"DELETE FROM {table_name}")
         
-        # Reset auto-increment counters for SQLite
+        # Reset auto-increment counters
         for table_name in tables:
-            conn.execute(text(f"DELETE FROM sqlite_sequence WHERE name='{table_name}'"))
+            conn.execute(f"DELETE FROM sqlite_sequence WHERE name='{table_name}'")
+        
+        # Re-enable foreign key constraints
+        conn.execute("PRAGMA foreign_keys=ON")
     
     yield
 
 
 @pytest.fixture
-def client():
+def client(app_with_db):
     """Test client fixture"""
-    with TestClient(app) as c:
+    with TestClient(app_with_db) as c:
         yield c
 
 
 @pytest.fixture
-def db_session():
+def db_session(TestingSessionLocal):
     """Database session fixture"""
     db = TestingSessionLocal()
     try:

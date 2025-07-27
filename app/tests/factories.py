@@ -18,9 +18,9 @@ class UserFactory(factory.Factory):
     last_name = factory.Faker("last_name")
     gender = factory.Iterator([GenderEnum.MALE, GenderEnum.FEMALE, GenderEnum.OTHER])
     age = factory.Faker("random_int", min=18, max=80)
-    height = factory.Faker("random_float", min=150, max=200)
-    initial_weight = factory.Faker("random_float", min=50, max=120)
-    target_weight = factory.Faker("random_float", min=50, max=120)
+    height = factory.Faker("pyfloat", min_value=150, max_value=200)
+    initial_weight = factory.Faker("pyfloat", min_value=50, max_value=120)
+    target_weight = factory.Faker("pyfloat", min_value=50, max_value=120)
     weight_unit = WeightUnitEnum.KG
     height_unit = HeightUnitEnum.CM
     profile_visibility = True
@@ -34,10 +34,10 @@ class WeightEntryFactory(factory.Factory):
     class Meta:
         model = WeightEntry
     
-    weight = factory.Faker("random_float", min=50, max=120)
+    weight = factory.Faker("pyfloat", min_value=50, max_value=120)
     date = factory.Faker("date_time_between", start_date="-30d", end_date="now")
     comment = factory.Faker("sentence", nb_words=5)
-    user_id = factory.SubFactory(UserFactory).id
+    user = factory.SubFactory(UserFactory)
 
 
 class UnverifiedUserFactory(UserFactory):

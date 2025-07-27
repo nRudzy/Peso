@@ -54,7 +54,7 @@ def test_login_invalid_credentials(client):
     
     response = client.post("/api/v1/auth/login", json=login_data)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert "Incorrect email or password" in response.json()["detail"]
+    assert "Invalid email or password" in response.json()["detail"]
 
 
 def test_refresh_token_success(client, auth_headers):

@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, session
 from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.core.database import get_db, Base
@@ -22,19 +22,6 @@ engine = create_engine(
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def override_get_db():
-    """Override database dependency for testing"""
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
-
-
-# Override the database dependency
-app.dependency_overrides[get_db] = override_get_db
-
-
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
     """Setup database once for all tests"""
@@ -44,22 +31,38 @@ def setup_database():
 
 
 @pytest.fixture(autouse=True)
-def clean_database():
-    """Clean database before each test"""
-    # Clean all tables before each test
-    with engine.begin() as conn:
-        # Get all table names
-        tables = Base.metadata.tables.keys()
-        
-        # Delete all data from all tables
-        for table_name in tables:
-            conn.execute(text(f"DELETE FROM {table_name}"))
-        
-        # Reset auto-increment counters for SQLite
-        for table_name in tables:
-            conn.execute(text(f"DELETE FROM sqlite_sequence WHERE name='{table_name}'"))
+def db_transaction():
+    """Use database transaction for automatic rollback after each test"""
+    connection = engine.connect()
+    transaction = connection.begin()
     
-    yield
+    # Create session bound to the transaction
+    session_factory = sessionmaker(bind=connection)
+    db_session = session_factory()
+    
+    # Override the database dependency for this test
+    original_get_db = app.dependency_overrides.get(get_db)
+    
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass  # Don't close here, we'll handle it in cleanup
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
+    yield db_session
+    
+    # Cleanup: rollback transaction and close connections
+    db_session.close()
+    transaction.rollback()
+    connection.close()
+    
+    # Restore original dependency
+    if original_get_db:
+        app.dependency_overrides[get_db] = original_get_db
+    else:
+        app.dependency_overrides.pop(get_db, None)
 
 
 @pytest.fixture
@@ -70,13 +73,9 @@ def client():
 
 
 @pytest.fixture
-def db_session():
-    """Database session fixture"""
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def db_session(db_transaction):
+    """Database session fixture (uses transaction)"""
+    return db_transaction
 
 
 @pytest.fixture
