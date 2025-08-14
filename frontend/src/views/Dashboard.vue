@@ -5,13 +5,13 @@
         Tableau de Bord
       </h1>
       <p class="text-gray-600">
-        Suivez votre progression de poids
+        Suivez votre progression de poids et IMC
       </p>
     </div>
     
-    <div class="dashboard-grid">
+    <div class="dashboard-grid" data-testid="dashboard-grid">
       <!-- Weight Entry Form -->
-      <div class="dashboard-section">
+      <div class="dashboard-section" data-testid="weight-entry-form">
         <WeightEntryForm
           :weight-unit="userProfile?.weight_unit || 'kg'"
           :user-height="userProfile?.height"
@@ -20,7 +20,7 @@
       </div>
       
       <!-- Weight Chart -->
-      <div class="dashboard-section">
+      <div class="dashboard-section" data-testid="weight-chart">
         <WeightChart
           ref="weightChart"
           :weight-unit="userProfile?.weight_unit || 'kg'"
@@ -28,9 +28,27 @@
         />
       </div>
       
+      <!-- BMI Chart -->
+      <div class="dashboard-section" data-testid="bmi-chart">
+        <BMIChart
+          ref="bmiChart"
+          :user-height="userProfile?.height"
+          :user-id="userProfile?.id"
+        />
+      </div>
+      
+      <!-- Weight Statistics -->
+      <div class="dashboard-section" data-testid="weight-statistics">
+        <WeightStatistics
+          ref="weightStatistics"
+          :weight-unit="userProfile?.weight_unit || 'kg'"
+          :user-id="userProfile?.id"
+        />
+      </div>
+      
       <!-- User Profile Summary -->
       <div class="dashboard-section">
-        <div class="profile-summary">
+        <div class="profile-summary" data-testid="user-profile">
           <div class="profile-header">
             <h3 class="text-lg font-semibold text-gray-900">
               Profil Utilisateur
@@ -49,28 +67,28 @@
           >
             <div class="profile-item">
               <span class="profile-label">Nom</span>
-              <span class="profile-value">
+              <span class="profile-value" data-testid="user-name">
                 {{ userProfile.first_name }} {{ userProfile.last_name }}
               </span>
             </div>
             
             <div class="profile-item">
               <span class="profile-label">Taille</span>
-              <span class="profile-value">
+              <span class="profile-value" data-testid="user-height">
                 {{ userProfile.height }} {{ userProfile.height_unit }}
               </span>
             </div>
             
             <div class="profile-item">
               <span class="profile-label">Poids initial</span>
-              <span class="profile-value">
+              <span class="profile-value" data-testid="initial-weight">
                 {{ userProfile.initial_weight }} {{ userProfile.weight_unit }}
               </span>
             </div>
             
             <div class="profile-item">
               <span class="profile-label">Objectif</span>
-              <span class="profile-value">
+              <span class="profile-value" data-testid="target-weight">
                 {{ userProfile.target_weight }} {{ userProfile.weight_unit }}
               </span>
             </div>
@@ -79,6 +97,7 @@
               <span class="profile-label">Statut</span>
               <span
                 class="profile-status"
+                data-testid="email-status"
                 :class="emailVerifiedClass"
               >
                 {{ userProfile.email_verified ? 'Vérifié' : 'Non vérifié' }}
@@ -99,7 +118,7 @@
       
       <!-- Quick Stats -->
       <div class="dashboard-section">
-        <div class="quick-stats">
+        <div class="quick-stats" data-testid="quick-stats">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">
             Statistiques Rapides
           </h3>
@@ -113,7 +132,7 @@
                 📊
               </div>
               <div class="stat-content">
-                <span class="stat-value">{{ weightStats.total_entries }}</span>
+                <span class="stat-value" data-testid="total-entries">{{ weightStats.total_entries }}</span>
                 <span class="stat-label">Entrées</span>
               </div>
             </div>
@@ -123,7 +142,7 @@
                 ⚖️
               </div>
               <div class="stat-content">
-                <span class="stat-value">{{ weightStats.current_weight }} {{ userProfile?.weight_unit }}</span>
+                <span class="stat-value" data-testid="current-weight">{{ weightStats.current_weight }} {{ userProfile?.weight_unit }}</span>
                 <span class="stat-label">Poids actuel</span>
               </div>
             </div>
@@ -148,7 +167,7 @@
                 🎯
               </div>
               <div class="stat-content">
-                <span class="stat-value">{{ weightStats.average_weight }} {{ userProfile?.weight_unit }}</span>
+                <span class="stat-value" data-testid="average-weight">{{ weightStats.average_weight }} {{ userProfile?.weight_unit }}</span>
                 <span class="stat-label">Moyenne</span>
               </div>
             </div>
@@ -165,6 +184,17 @@
         </div>
       </div>
     </div>
+    
+    <!-- Weight History Section -->
+    <div class="history-section" data-testid="weight-history">
+      <WeightHistory
+        ref="weightHistory"
+        :weight-unit="userProfile?.weight_unit || 'kg'"
+        :user-height="userProfile?.height"
+        @entry-updated="onEntryUpdated"
+        @entry-deleted="onEntryDeleted"
+      />
+    </div>
   </div>
 </template>
 
@@ -172,18 +202,27 @@
 import { ref, onMounted, computed } from 'vue'
 import WeightEntryForm from '@/components/WeightEntryForm.vue'
 import WeightChart from '@/components/WeightChart.vue'
+import BMIChart from '@/components/BMIChart.vue'
+import WeightStatistics from '@/components/WeightStatistics.vue'
+import WeightHistory from '@/components/WeightHistory.vue'
 import { authApi, weightEntriesApi } from '@/services/api'
 
 export default {
   name: 'Dashboard',
   components: {
     WeightEntryForm,
-    WeightChart
+    WeightChart,
+    BMIChart,
+    WeightStatistics,
+    WeightHistory
   },
   setup() {
     const userProfile = ref(null)
     const weightStats = ref(null)
     const weightChart = ref(null)
+    const bmiChart = ref(null)
+    const weightStatistics = ref(null)
+    const weightHistory = ref(null)
     const loading = ref(false)
     const error = ref(null)
     
@@ -221,10 +260,41 @@ export default {
     }
     
     const onEntryCreated = () => {
-      // Refresh chart and stats
+      // Refresh all components
+      refreshAllComponents()
+    }
+    
+    const onEntryUpdated = () => {
+      // Refresh all components
+      refreshAllComponents()
+    }
+    
+    const onEntryDeleted = () => {
+      // Refresh all components
+      refreshAllComponents()
+    }
+    
+    const refreshAllComponents = () => {
+      // Refresh charts
       if (weightChart.value) {
         weightChart.value.updateChart()
       }
+      if (bmiChart.value) {
+        bmiChart.value.updateChart()
+      }
+      
+      // Refresh statistics
+      if (weightStatistics.value) {
+        // Trigger a re-fetch by calling the component's method
+        // This would require exposing a refresh method in the component
+      }
+      
+      // Refresh history
+      if (weightHistory.value) {
+        weightHistory.value.fetchEntries()
+      }
+      
+      // Refresh quick stats
       fetchWeightStats()
     }
     
@@ -253,11 +323,16 @@ export default {
       userProfile,
       weightStats,
       weightChart,
+      bmiChart,
+      weightStatistics,
+      weightHistory,
       loading,
       error,
       emailVerifiedClass,
       weightChangeClass,
       onEntryCreated,
+      onEntryUpdated,
+      onEntryDeleted,
       editProfile,
       formatWeightChange
     }
@@ -275,11 +350,15 @@ export default {
 }
 
 .dashboard-grid {
-  @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8;
 }
 
 .dashboard-section {
   @apply space-y-6;
+}
+
+.history-section {
+  @apply mt-8;
 }
 
 .profile-summary {

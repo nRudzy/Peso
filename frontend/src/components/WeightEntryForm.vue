@@ -1,5 +1,5 @@
 <template>
-  <div class="weight-entry-form">
+  <div class="weight-entry-form" data-testid="weight-entry-form">
     <div class="form-header">
       <h3 class="text-lg font-semibold text-gray-900">
         Nouvelle Entrée de Poids
@@ -17,17 +17,18 @@
         >
           Poids ({{ weightUnit }})
         </label>
-        <input
-          id="weight"
-          v-model.number="formData.weight"
-          type="number"
-          step="0.1"
-          min="0"
-          max="500"
-          required
-          class="form-input"
-          :placeholder="`Ex: 70.5 ${weightUnit}`"
-        >
+              <input
+        id="weight"
+        data-testid="weight-input"
+        v-model.number="formData.weight"
+        type="number"
+        step="0.1"
+        min="0"
+        max="500"
+        required
+        class="form-input"
+        :placeholder="`Ex: 70.5 ${weightUnit}`"
+      >
       </div>
       
       <div class="form-group">
@@ -39,6 +40,7 @@
         </label>
         <input
           id="date"
+          data-testid="date-input"
           v-model="formData.date"
           type="datetime-local"
           required
@@ -55,6 +57,7 @@
         </label>
         <textarea
           id="comment"
+          data-testid="comment-input"
           v-model="formData.comment"
           rows="3"
           class="form-textarea"
@@ -94,6 +97,7 @@
       <div class="form-actions">
         <button
           type="submit"
+          data-testid="submit-button"
           :disabled="loading"
           class="btn-primary"
         >
@@ -126,6 +130,7 @@
     
     <div
       v-if="success"
+      data-testid="success-message"
       class="success-message"
     >
       <p class="text-green-600">

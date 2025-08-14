@@ -63,6 +63,8 @@ class WeightStatistics(BaseModel):
     min_weight: Optional[float] = None
     max_weight: Optional[float] = None
     average_weight: Optional[float] = None
+    goal_progression_percentage: Optional[float] = None
+    weight_to_goal: Optional[float] = None
 
 
 class WeightProgress(BaseModel):

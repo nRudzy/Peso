@@ -114,15 +114,41 @@ class WeightEntryService:
                 "min_weight": None,
                 "max_weight": None,
                 "average_weight": None,
+                "goal_progression_percentage": None,
+                "weight_to_goal": None,
             }
 
         weights = [entry.weight for entry in entries]
+        current_weight = entries[0].weight if entries else None
+        initial_weight = entries[-1].weight if entries else None
+
+        # Get user's target weight from user profile
+        from app.models.user import User
+        user = self.db.query(User).filter(User.id == user_id).first()
+        target_weight = user.target_weight if user else None
+
+        # Calculate goal progression
+        goal_progression_percentage = None
+        weight_to_goal = None
+        
+        if target_weight and current_weight and initial_weight:
+            total_weight_to_lose = abs(initial_weight - target_weight)
+            current_progress = abs(current_weight - target_weight)
+            
+            if total_weight_to_lose > 0:
+                goal_progression_percentage = min(100, max(0, 
+                    ((total_weight_to_lose - current_progress) / total_weight_to_lose) * 100
+                ))
+            
+            weight_to_goal = current_weight - target_weight
 
         return {
             "total_entries": len(entries),
-            "current_weight": entries[0].weight if entries else None,
-            "initial_weight": entries[-1].weight if entries else None,
+            "current_weight": current_weight,
+            "initial_weight": initial_weight,
             "min_weight": min(weights),
             "max_weight": max(weights),
             "average_weight": round(sum(weights) / len(weights), 2),
+            "goal_progression_percentage": round(goal_progression_percentage, 1) if goal_progression_percentage is not None else None,
+            "weight_to_goal": round(weight_to_goal, 1) if weight_to_goal is not None else None,
         }

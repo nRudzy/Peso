@@ -1,9 +1,9 @@
 <template>
-  <div class="weight-chart-container" data-testid="weight-chart">
+  <div class="bmi-chart-container" data-testid="bmi-chart">
     <div class="chart-header">
-      <h3 class="text-lg font-semibold text-gray-900">Progression du Poids</h3>
+      <h3 class="text-lg font-semibold text-gray-900">Évolution de l'IMC</h3>
       <div class="chart-controls">
-        <select v-model="selectedPeriod" data-testid="weight-chart-period-select" @change="updateChart" class="form-select">
+        <select v-model="selectedPeriod" data-testid="bmi-chart-period-select" @change="updateChart" class="form-select">
           <option value="7">7 jours</option>
           <option value="30">30 jours</option>
           <option value="90">90 jours</option>
@@ -18,28 +18,34 @@
     
     <div class="chart-stats" v-if="statistics">
       <div class="stat-item">
-        <span class="stat-label">Poids actuel</span>
-        <span class="stat-value">{{ statistics.current_weight }} {{ weightUnit }}</span>
+        <span class="stat-label">IMC actuel</span>
+        <span class="stat-value" data-testid="bmi-value">{{ statistics.current_bmi }}</span>
       </div>
       <div class="stat-item">
-        <span class="stat-label">Variation</span>
-        <span class="stat-value" :class="weightChangeClass">
-          {{ formatWeightChange(statistics.weight_change) }}
+        <span class="stat-label">Catégorie</span>
+        <span class="stat-value" data-testid="bmi-category" :class="getBMICategoryClass(statistics.current_bmi)">
+          {{ getBMICategory(statistics.current_bmi) }}
         </span>
       </div>
       <div class="stat-item">
-        <span class="stat-label">Moyenne</span>
-        <span class="stat-value">{{ statistics.average_weight }} {{ weightUnit }}</span>
+        <span class="stat-label">Moyenne IMC</span>
+        <span class="stat-value">{{ statistics.average_bmi }}</span>
       </div>
     </div>
     
     <div v-if="loading" class="loading-overlay">
       <div class="loading-spinner"></div>
-      <p>Chargement des données...</p>
+      <p>Chargement des données IMC...</p>
     </div>
     
     <div v-if="error" class="error-message">
       <p class="text-red-600">{{ error }}</p>
+    </div>
+    
+    <div v-if="!userHeight" class="no-height-message">
+      <p class="text-gray-500">
+        Veuillez configurer votre taille dans votre profil pour voir l'évolution de votre IMC.
+      </p>
     </div>
   </div>
 </template>
@@ -49,13 +55,14 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import 'chartjs-adapter-date-fns'
 import { weightEntriesApi } from '@/services/api'
+import { calculate_bmi, get_bmi_category, get_bmi_color_class } from '@/utils/bmi-calculator'
 
 export default {
-  name: 'WeightChart',
+  name: 'BMIChart',
   props: {
-    weightUnit: {
-      type: String,
-      default: 'kg'
+    userHeight: {
+      type: Number,
+      default: null
     },
     userId: {
       type: Number,
@@ -102,27 +109,36 @@ export default {
             return
           }
           
+          // Define BMI category zones
+          const bmiZones = [
+            { min: 0, max: 18.5, color: 'rgba(255, 193, 7, 0.1)', borderColor: 'rgba(255, 193, 7, 0.5)' },
+            { min: 18.5, max: 25, color: 'rgba(40, 167, 69, 0.1)', borderColor: 'rgba(40, 167, 69, 0.5)' },
+            { min: 25, max: 30, color: 'rgba(255, 152, 0, 0.1)', borderColor: 'rgba(255, 152, 0, 0.5)' },
+            { min: 30, max: 50, color: 'rgba(220, 53, 69, 0.1)', borderColor: 'rgba(220, 53, 69, 0.5)' }
+          ]
+          
           chart.value = new Chart(ctx, {
             type: 'line',
             data: {
               labels: data.labels,
               datasets: [{
-                label: `Poids (${props.weightUnit})`,
-                data: data.weights.map((weight, index) => ({
+                label: 'IMC',
+                data: data.bmiValues.map((bmi, index) => ({
                   x: data.labels[index],
-                  y: weight,
+                  y: bmi,
+                  weight: data.weights[index],
                   comment: data.comments[index]
                 })),
                 borderColor: 'rgb(59, 130, 246)',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderWidth: 2,
+                borderWidth: 3,
                 fill: false,
                 tension: 0.4,
                 pointBackgroundColor: 'rgb(59, 130, 246)',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6,
+                pointRadius: 5,
+                pointHoverRadius: 7,
                 spanGaps: true
               }]
             },
@@ -154,13 +170,22 @@ export default {
                       })
                     },
                     label: function(context) {
-                      const weight = context.parsed.y
+                      const bmi = context.parsed.y
+                      const weight = context.raw.weight
                       const comment = context.raw.comment
-                      let label = `${weight} ${props.weightUnit}`
+                      let label = `IMC: ${bmi.toFixed(1)}`
+                      if (weight) {
+                        label += ` (${weight} kg)`
+                      }
                       if (comment && comment.trim()) {
                         label += ` - ${comment}`
                       }
                       return label
+                    },
+                    afterLabel: function(context) {
+                      const bmi = context.parsed.y
+                      const category = get_bmi_category(bmi)
+                      return `Catégorie: ${category}`
                     }
                   }
                 }
@@ -192,11 +217,29 @@ export default {
                 y: {
                   title: {
                     display: true,
-                    text: `Poids (${props.weightUnit})`
+                    text: 'IMC'
                   },
+                  min: 15,
+                  max: 40,
                   ticks: {
                     callback: function(value) {
-                      return value + ' ' + props.weightUnit
+                      return value.toFixed(1)
+                    }
+                  },
+                  grid: {
+                    color: function(context) {
+                      const value = context.tick.value
+                      if (value === 18.5 || value === 25 || value === 30) {
+                        return 'rgba(0, 0, 0, 0.2)'
+                      }
+                      return 'rgba(0, 0, 0, 0.1)'
+                    },
+                    lineWidth: function(context) {
+                      const value = context.tick.value
+                      if (value === 18.5 || value === 25 || value === 30) {
+                        return 2
+                      }
+                      return 1
                     }
                   }
                 }
@@ -214,7 +257,12 @@ export default {
       })
     }
     
-    const fetchWeightData = async () => {
+    const fetchBMIData = async () => {
+      if (!props.userHeight) {
+        error.value = 'Taille non configurée'
+        return
+      }
+      
       loading.value = true
       error.value = null
       
@@ -225,48 +273,58 @@ export default {
         // Check if we have data
         if (!data.entries || data.entries.length === 0) {
           statistics.value = {
-            current_weight: 0,
-            weight_change: 0,
-            average_weight: 0
+            current_bmi: 0,
+            average_bmi: 0
           }
           destroyChart()
           return
         }
+        
+        // Calculate BMI for each entry
+        const bmiData = data.entries.map(entry => {
+          try {
+            return calculate_bmi(entry.weight, props.userHeight)
+          } catch (err) {
+            return null
+          }
+        }).filter(bmi => bmi !== null)
         
         // Format data for chart
         const chartData = {
           labels: data.entries.map(entry => new Date(entry.date)).filter(date => !isNaN(date.getTime())),
           weights: data.entries.map(entry => entry.weight).filter(weight => weight !== null && weight !== undefined),
+          bmiValues: bmiData,
           comments: data.entries.map(entry => entry.comment || '').filter((_, index) => !isNaN(new Date(data.entries[index].date).getTime()))
         }
         
         // Ensure we have valid data
-        if (chartData.labels.length === 0 || chartData.weights.length === 0) {
+        if (chartData.labels.length === 0 || chartData.bmiValues.length === 0) {
           statistics.value = {
-            current_weight: 0,
-            weight_change: 0,
-            average_weight: 0
+            current_bmi: 0,
+            average_bmi: 0
           }
           destroyChart()
           return
         }
         
+        // Calculate statistics
+        const currentBMI = chartData.bmiValues[0]
+        const averageBMI = chartData.bmiValues.reduce((sum, bmi) => sum + bmi, 0) / chartData.bmiValues.length
+        
         statistics.value = {
-          current_weight: data.entries[0]?.weight || 0,
-          weight_change: data.weight_change || 0,
-          average_weight: data.average_weight || 0
+          current_bmi: currentBMI.toFixed(1),
+          average_bmi: averageBMI.toFixed(1)
         }
         
         createChart(chartData)
       } catch (err) {
-        error.value = err.message || 'Erreur lors du chargement des données'
-        console.error('Error fetching weight data:', err)
+        error.value = err.message || 'Erreur lors du chargement des données IMC'
+        console.error('Error fetching BMI data:', err)
         
         // Set default statistics on error
         statistics.value = {
-          current_weight: 0,
-          weight_change: 0,
-          average_weight: 0
+          current_bmi: 0,
+          average_bmi: 0
         }
         destroyChart()
       } finally {
@@ -277,26 +335,31 @@ export default {
     const updateChart = () => {
       // Prevent multiple simultaneous updates
       if (loading.value) return
-      fetchWeightData()
+      fetchBMIData()
     }
     
-    const formatWeightChange = (change) => {
-      if (change === null || change === undefined) return '0'
-      if (change === 0) return '0'
-      const sign = change > 0 ? '+' : ''
-      return `${sign}${change.toFixed(1)} ${props.weightUnit}`
+    const getBMICategory = (bmi) => {
+      if (!bmi || bmi === 0) return 'N/A'
+      try {
+        return get_bmi_category(parseFloat(bmi))
+      } catch (err) {
+        return 'N/A'
+      }
     }
     
-    const weightChangeClass = computed(() => {
-      if (!statistics.value) return ''
-      const change = statistics.value.weight_change
-      if (change > 0) return 'text-red-600'
-      if (change < 0) return 'text-green-600'
-      return 'text-gray-600'
-    })
+    const getBMICategoryClass = (bmi) => {
+      if (!bmi || bmi === 0) return 'text-gray-600'
+      try {
+        return get_bmi_color_class(parseFloat(bmi))
+      } catch (err) {
+        return 'text-gray-600'
+      }
+    }
     
     onMounted(() => {
-      fetchWeightData()
+      if (props.userHeight) {
+        fetchBMIData()
+      }
     })
     
     onUnmounted(() => {
@@ -310,15 +373,15 @@ export default {
       error,
       statistics,
       updateChart,
-      formatWeightChange,
-      weightChangeClass
+      getBMICategory,
+      getBMICategoryClass
     }
   }
 }
 </script>
 
 <style scoped>
-.weight-chart-container {
+.bmi-chart-container {
   @apply bg-white rounded-lg shadow-md p-6;
   position: relative;
 }
@@ -367,5 +430,15 @@ export default {
 
 .error-message {
   @apply mt-4 p-3 bg-red-50 border border-red-200 rounded-md;
+}
+
+.no-height-message {
+  @apply mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-center;
+}
+
+@media (max-width: 640px) {
+  .chart-stats {
+    @apply grid-cols-1 gap-2;
+  }
 }
 </style>
