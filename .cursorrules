@@ -659,6 +659,110 @@ test: add unit tests for weight tracking
 
 ---
 
+## 🐳 DÉVELOPPEMENT AVEC DOCKER
+
+### Environnement de Développement
+- **Toujours utiliser Docker** pour le développement local
+- **Lancer l'environnement** : `./dev.sh` depuis la racine du projet
+- **Services disponibles** :
+  - Frontend: http://localhost:3000
+  - Backend API: http://localhost:8000
+  - Documentation API: http://localhost:8000/docs
+  - Nginx: http://localhost:80
+  - Mailpit: http://localhost:8025
+
+### Commandes Docker Essentielles
+
+#### Backend (Python/FastAPI)
+```bash
+# Tests dans le conteneur backend
+docker-compose exec backend python -m pytest tests/ -v
+docker-compose exec backend python -m pytest --cov=app --cov-report=html
+
+# Linting et formatage
+docker-compose exec backend black .
+docker-compose exec backend isort .
+docker-compose exec backend flake8 .
+docker-compose exec backend mypy app/
+
+# Sécurité
+docker-compose exec backend bandit -r app/
+docker-compose exec backend safety check
+
+# Shell interactif
+docker-compose exec backend python
+docker-compose exec backend bash
+```
+
+#### Frontend (Vue.js)
+```bash
+# Tests dans le conteneur frontend
+docker-compose exec frontend npm run test:unit
+docker-compose exec frontend npm run test:e2e
+
+# Linting et formatage
+docker-compose exec frontend npm run lint
+docker-compose exec frontend npx prettier --check src/
+
+# Build
+docker-compose exec frontend npm run build
+
+# Shell interactif
+docker-compose exec frontend bash
+```
+
+#### Base de Données
+```bash
+# Accès à PostgreSQL
+docker-compose exec db psql -U peso -d peso_dev
+
+# Migrations
+docker-compose exec backend alembic upgrade head
+docker-compose exec backend alembic revision --autogenerate -m "description"
+
+# Reset de la base
+docker-compose down -v && docker-compose up -d
+```
+
+#### Logs et Monitoring
+```bash
+# Voir les logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f db
+
+# État des services
+docker-compose ps
+docker-compose top
+```
+
+### Tests et Qualité
+
+#### Tests Backend
+- **Tests unitaires** : `docker-compose exec backend pytest tests/unit/`
+- **Tests d'intégration** : `docker-compose exec backend pytest tests/integration/`
+- **Tests avec couverture** : `docker-compose exec backend pytest --cov=app --cov-report=html`
+- **Tests de sécurité** : `docker-compose exec backend bandit -r app/`
+
+#### Tests Frontend
+- **Tests unitaires** : `docker-compose exec frontend npm run test:unit`
+- **Tests E2E** : `docker-compose exec frontend npm run test:e2e`
+- **Linting** : `docker-compose exec frontend npm run lint`
+
+### Développement Rapide
+
+#### Workflow Typique
+1. **Démarrer l'environnement** : `./dev.sh`
+2. **Développer** : Code dans les dossiers `backend/` et `frontend/`
+3. **Tester** : Utiliser les commandes Docker ci-dessus
+4. **Vérifier** : Les changements sont automatiquement rechargés
+5. **Valider** : Tests et linting avant commit
+
+#### Hot Reload
+- **Backend** : Redémarrage automatique avec uvicorn
+- **Frontend** : Hot reload avec Vite
+- **Base de données** : Persistance des données entre redémarrages
+
 ## 🔄 WORKFLOW DE DÉVELOPPEMENT
 
 ### Branches
