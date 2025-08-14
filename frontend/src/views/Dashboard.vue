@@ -209,7 +209,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import WeightEntryForm from '@/components/WeightEntryForm.vue'
 import WeightChart from '@/components/WeightChart.vue'
 import BMIChart from '@/components/BMIChart.vue'
@@ -307,7 +307,7 @@ export default {
         weightChart.value.updateChart()
       }
       if (bmiChart.value) {
-        bmiChart.value.updateChart()
+        bmiChart.value.refresh()
       }
       
       // Refresh statistics
@@ -326,8 +326,8 @@ export default {
     }
     
     const editProfile = () => {
-      // TODO: Navigate to profile edit page
-      console.log('Edit profile clicked')
+      // Navigate to profile edit page
+      window.location.href = '/profile/edit'
     }
     
     const formatWeightChange = (change) => {
@@ -336,6 +336,14 @@ export default {
       const sign = change > 0 ? '+' : ''
       return `${sign}${change.toFixed(1)} ${userProfile.value?.weight_unit || 'kg'}`
     }
+    
+    // Watch for changes in userProfile to refresh BMI chart when height changes
+    watch(() => userProfile.value?.height, (newHeight, oldHeight) => {
+      if (newHeight && newHeight !== oldHeight && bmiChart.value) {
+        // User height has changed, refresh BMI chart
+        bmiChart.value.refresh()
+      }
+    })
     
     onMounted(async () => {
       loading.value = true

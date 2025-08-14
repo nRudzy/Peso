@@ -7,14 +7,14 @@
             Peso - Suivi de Poids
           </h1>
           <nav class="flex space-x-4">
-            <a
-              href="#"
+            <router-link
+              to="/"
               class="hover:text-blue-200"
-            >Accueil</a>
-            <a
-              href="#"
+            >Accueil</router-link>
+            <router-link
+              to="/profile/edit"
               class="hover:text-blue-200"
-            >Profil</a>
+            >Profil</router-link>
             <a
               href="#"
               class="hover:text-blue-200"
@@ -25,29 +25,22 @@
       </header>
       
       <main class="container mx-auto p-4">
-        <Dashboard />
+        <router-view />
       </main>
     </div>
     
-    <Login
-      v-else
-      @login-success="handleLoginSuccess"
-    />
+    <router-view v-else />
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import Dashboard from '@/views/Dashboard.vue'
-import Login from '@/views/Login.vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'App',
-  components: {
-    Dashboard,
-    Login
-  },
   setup() {
+    const router = useRouter()
     const isAuthenticated = ref(false)
 
     const checkAuth = () => {
@@ -55,14 +48,16 @@ export default {
       isAuthenticated.value = !!token
     }
 
-    const handleLoginSuccess = () => {
-      isAuthenticated.value = true
-    }
-
     const logout = () => {
       localStorage.removeItem('token')
       isAuthenticated.value = false
+      router.push('/login')
     }
+
+    // Watch for route changes to update authentication status
+    watch(() => router.currentRoute.value, () => {
+      checkAuth()
+    })
 
     onMounted(() => {
       checkAuth()
@@ -70,7 +65,6 @@ export default {
 
     return {
       isAuthenticated,
-      handleLoginSuccess,
       logout
     }
   }

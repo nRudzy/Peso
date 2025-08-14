@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import Chart from 'chart.js/auto'
 import 'chartjs-adapter-date-fns'
 import { weightEntriesApi } from '@/services/api'
@@ -260,6 +260,11 @@ export default {
     const fetchBMIData = async () => {
       if (!props.userHeight) {
         error.value = 'Taille non configurée'
+        statistics.value = {
+          current_bmi: 0,
+          average_bmi: 0
+        }
+        destroyChart()
         return
       }
       
@@ -338,6 +343,11 @@ export default {
       fetchBMIData()
     }
     
+    // Public method to force refresh
+    const refresh = () => {
+      fetchBMIData()
+    }
+    
     const getBMICategory = (bmi) => {
       if (!bmi || bmi === 0) return 'N/A'
       try {
@@ -356,10 +366,16 @@ export default {
       }
     }
     
-    onMounted(() => {
-      if (props.userHeight) {
+    // Watch for changes in userHeight prop
+    watch(() => props.userHeight, (newHeight, oldHeight) => {
+      if (newHeight && newHeight !== oldHeight) {
+        // User height has changed, reload BMI data
         fetchBMIData()
       }
+    }, { immediate: true })
+    
+    onMounted(() => {
+      // Initial load will be handled by the watcher
     })
     
     onUnmounted(() => {
@@ -373,6 +389,7 @@ export default {
       error,
       statistics,
       updateChart,
+      refresh,
       getBMICategory,
       getBMICategoryClass
     }

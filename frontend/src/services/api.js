@@ -99,6 +99,11 @@ export const authApi = {
     return api.get('/v1/users/me')
   },
 
+  // Update user profile
+  async updateProfile(userData) {
+    return api.put('/v1/users/me', userData)
+  },
+
   // Logout user
   async logout() {
     return api.post('/v1/auth/logout')

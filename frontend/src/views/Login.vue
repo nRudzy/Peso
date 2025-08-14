@@ -28,6 +28,7 @@
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="Adresse email"
+              data-testid="email-input"
             >
           </div>
           <div>
@@ -43,6 +44,7 @@
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="Mot de passe"
+              data-testid="password-input"
             >
           </div>
         </div>
@@ -52,6 +54,7 @@
             type="submit"
             :disabled="loading"
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            data-testid="login-button"
           >
             <span
               v-if="loading"
@@ -90,8 +93,7 @@ import { authApi } from '@/services/api'
 
 export default {
   name: 'Login',
-  emits: ['login-success'],
-  setup(props, { emit }) {
+  setup() {
     const email = ref('test@example.com')
     const password = ref('password123')
     const loading = ref(false)
@@ -110,8 +112,8 @@ export default {
         // Store token
         localStorage.setItem('token', response.data.access_token)
         
-        // Emit success event
-        emit('login-success', response.data)
+        // Redirect to dashboard
+        window.location.href = '/'
         
       } catch (err) {
         error.value = err.response?.data?.detail || 'Erreur de connexion'
