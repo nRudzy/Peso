@@ -45,8 +45,9 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import Chart from 'chart.js/auto'
+import 'chartjs-adapter-date-fns'
 import { weightEntriesApi } from '@/services/api'
 
 export default {
@@ -69,83 +70,146 @@ export default {
     const error = ref(null)
     const statistics = ref(null)
     
-    const createChart = (data) => {
+    const destroyChart = () => {
       if (chart.value) {
-        chart.value.destroy()
+        try {
+          chart.value.destroy()
+        } catch (e) {
+          console.warn('Error destroying chart:', e)
+        }
+        chart.value = null
       }
+    }
+    
+    const createChart = (data) => {
+      // Destroy existing chart
+      destroyChart()
       
-      const ctx = chartCanvas.value.getContext('2d')
-      
-      chart.value = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: data.labels,
-          datasets: [{
-            label: `Poids (${props.weightUnit})`,
-            data: data.weights,
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: 'rgb(59, 130, 246)',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                title: function(context) {
-                  return context[0].label
-                },
-                label: function(context) {
-                  return `${context.parsed.y} ${props.weightUnit}`
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              type: 'time',
-              time: {
-                unit: 'day',
-                displayFormats: {
-                  day: 'DD/MM'
-                }
-              },
-              title: {
-                display: true,
-                text: 'Date'
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: `Poids (${props.weightUnit})`
-              },
-              ticks: {
-                callback: function(value) {
-                  return value + ' ' + props.weightUnit
-                }
-              }
-            }
-          },
-          interaction: {
-            mode: 'nearest',
-            axis: 'x',
-            intersect: false
+      // Add a small delay to ensure complete destruction
+      setTimeout(() => {
+        if (!chartCanvas.value) return
+        
+        try {
+          // Clear the canvas
+          const ctx = chartCanvas.value.getContext('2d')
+          if (ctx) {
+            ctx.clearRect(0, 0, chartCanvas.value.width, chartCanvas.value.height)
           }
+          
+          // Double check that canvas is still valid
+          if (!chartCanvas.value || !ctx) {
+            console.warn('Canvas not available for chart creation')
+            return
+          }
+          
+          chart.value = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: data.labels,
+              datasets: [{
+                label: `Poids (${props.weightUnit})`,
+                data: data.weights.map((weight, index) => ({
+                  x: data.labels[index],
+                  y: weight,
+                  comment: data.comments[index]
+                })),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                pointBackgroundColor: 'rgb(59, 130, 246)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                spanGaps: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: false,
+              transitions: {
+                active: {
+                  animation: {
+                    duration: 0
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  callbacks: {
+                    title: function(context) {
+                      const date = new Date(context[0].parsed.x)
+                      return date.toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })
+                    },
+                    label: function(context) {
+                      const weight = context.parsed.y
+                      const comment = context.raw.comment
+                      let label = `${weight} ${props.weightUnit}`
+                      if (comment && comment.trim()) {
+                        label += ` - ${comment}`
+                      }
+                      return label
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  type: 'time',
+                  time: {
+                    unit: 'day',
+                    displayFormats: {
+                      day: 'dd/MM'
+                    },
+                    tooltipFormat: 'dd/MM/yyyy'
+                  },
+                  title: {
+                    display: true,
+                    text: 'Date'
+                  },
+                  ticks: {
+                    callback: function(value) {
+                      const date = new Date(value)
+                      return date.toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit'
+                      })
+                    }
+                  }
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: `Poids (${props.weightUnit})`
+                  },
+                  ticks: {
+                    callback: function(value) {
+                      return value + ' ' + props.weightUnit
+                    }
+                  }
+                }
+              },
+              interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+              }
+            }
+          })
+        } catch (e) {
+          console.error('Error creating chart:', e)
         }
       })
     }
@@ -158,32 +222,66 @@ export default {
         const response = await weightEntriesApi.getWeightProgress(selectedPeriod.value)
         const data = response.data
         
+        // Check if we have data
+        if (!data.entries || data.entries.length === 0) {
+          statistics.value = {
+            current_weight: 0,
+            weight_change: 0,
+            average_weight: 0
+          }
+          destroyChart()
+          return
+        }
+        
         // Format data for chart
         const chartData = {
-          labels: data.entries.map(entry => new Date(entry.date)),
-          weights: data.entries.map(entry => entry.weight)
+          labels: data.entries.map(entry => new Date(entry.date)).filter(date => !isNaN(date.getTime())),
+          weights: data.entries.map(entry => entry.weight).filter(weight => weight !== null && weight !== undefined),
+          comments: data.entries.map(entry => entry.comment || '').filter((_, index) => !isNaN(new Date(data.entries[index].date).getTime()))
+        }
+        
+        // Ensure we have valid data
+        if (chartData.labels.length === 0 || chartData.weights.length === 0) {
+          statistics.value = {
+            current_weight: 0,
+            weight_change: 0,
+            average_weight: 0
+          }
+          destroyChart()
+          return
         }
         
         statistics.value = {
           current_weight: data.entries[0]?.weight || 0,
-          weight_change: data.weight_change,
-          average_weight: data.average_weight
+          weight_change: data.weight_change || 0,
+          average_weight: data.average_weight || 0
         }
         
         createChart(chartData)
       } catch (err) {
-        error.value = err.message
+        error.value = err.message || 'Erreur lors du chargement des données'
         console.error('Error fetching weight data:', err)
+        
+        // Set default statistics on error
+        statistics.value = {
+          current_weight: 0,
+          weight_change: 0,
+          average_weight: 0
+        }
+        destroyChart()
       } finally {
         loading.value = false
       }
     }
     
     const updateChart = () => {
+      // Prevent multiple simultaneous updates
+      if (loading.value) return
       fetchWeightData()
     }
     
     const formatWeightChange = (change) => {
+      if (change === null || change === undefined) return '0'
       if (change === 0) return '0'
       const sign = change > 0 ? '+' : ''
       return `${sign}${change.toFixed(1)} ${props.weightUnit}`
@@ -202,9 +300,7 @@ export default {
     })
     
     onUnmounted(() => {
-      if (chart.value) {
-        chart.value.destroy()
-      }
+      destroyChart()
     })
     
     return {
@@ -270,6 +366,6 @@ export default {
 }
 
 .error-message {
-  @apply mt-4 p-4 bg-red-50 border border-red-200 rounded-md;
+  @apply mt-4 p-3 bg-red-50 border border-red-200 rounded-md;
 }
 </style>

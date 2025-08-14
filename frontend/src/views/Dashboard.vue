@@ -193,9 +193,10 @@ export default {
     }
     
     const formatWeightChange = (change) => {
+      if (change === null || change === undefined) return '0'
       if (change === 0) return '0'
       const sign = change > 0 ? '+' : ''
-      return `${sign}${change.toFixed(1)} ${userProfile.value?.weight_unit}`
+      return `${sign}${change.toFixed(1)} ${userProfile.value?.weight_unit || 'kg'}`
     }
     
     onMounted(async () => {
