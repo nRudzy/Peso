@@ -11,7 +11,7 @@ class EmailService:
         # Configure email settings based on environment
         use_credentials = bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
         use_tls = settings.SMTP_HOST != "mailpit"  # Disable TLS for Mailpit
-        
+
         self.conf = ConnectionConfig(
             MAIL_USERNAME=settings.SMTP_USER,
             MAIL_PASSWORD=settings.SMTP_PASSWORD,
@@ -20,7 +20,7 @@ class EmailService:
             MAIL_SERVER=settings.SMTP_HOST,
             MAIL_STARTTLS=use_tls,
             MAIL_SSL_TLS=False,
-            USE_CREDENTIALS=use_credentials
+            USE_CREDENTIALS=use_credentials,
         )
         self.fastmail = FastMail(self.conf)
 
@@ -28,7 +28,7 @@ class EmailService:
         """Send email verification email"""
         try:
             verification_url = f"http://localhost:3000/verify-email?token={token}"
-            
+
             message = MessageSchema(
                 subject="Vérifiez votre adresse email - Peso",
                 recipients=[email],
@@ -45,13 +45,13 @@ class EmailService:
                     </body>
                 </html>
                 """,
-                subtype="html"
+                subtype="html",
             )
-            
+
             await self.fastmail.send_message(message)
             logger.info(f"Verification email sent to {email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send verification email to {email}: {str(e)}")
             return False
@@ -60,7 +60,7 @@ class EmailService:
         """Send password reset email"""
         try:
             reset_url = f"http://localhost:3000/reset-password?token={token}"
-            
+
             message = MessageSchema(
                 subject="Réinitialisation de mot de passe - Peso",
                 recipients=[email],
@@ -79,22 +79,24 @@ class EmailService:
                     </body>
                 </html>
                 """,
-                subtype="html"
+                subtype="html",
             )
-            
+
             await self.fastmail.send_message(message)
             logger.info(f"Password reset email sent to {email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send password reset email to {email}: {str(e)}")
             return False
 
-    async def send_welcome_email(self, email: str, first_name: Optional[str] = None) -> bool:
+    async def send_welcome_email(
+        self, email: str, first_name: Optional[str] = None
+    ) -> bool:
         """Send welcome email after successful registration"""
         try:
             name = first_name or "Utilisateur"
-            
+
             message = MessageSchema(
                 subject="Bienvenue sur Peso !",
                 recipients=[email],
@@ -109,13 +111,13 @@ class EmailService:
                     </body>
                 </html>
                 """,
-                subtype="html"
+                subtype="html",
             )
-            
+
             await self.fastmail.send_message(message)
             logger.info(f"Welcome email sent to {email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to send welcome email to {email}: {str(e)}")
-            return False 
+            return False

@@ -4,7 +4,12 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest
-from app.core.security import verify_password, create_access_token, create_refresh_token, verify_token
+from app.core.security import (
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    verify_token,
+)
 from app.core.config import settings
 from app.services.user_service import UserService
 from app.services.email_service import EmailService
@@ -54,7 +59,7 @@ class AuthService:
         # Send verification email
         verification_token = create_access_token(
             data={"sub": str(user.id), "type": "email_verification"},
-            expires_delta=timedelta(hours=24)
+            expires_delta=timedelta(hours=24),
         )
         # Note: In a real app, you'd want to make this async
         # For now, we'll just log that the email would be sent
@@ -136,4 +141,4 @@ class AuthService:
         """Logout user (invalidate tokens)"""
         # In a real application, you would add tokens to a blacklist
         # For now, we'll just return True as JWT tokens are stateless
-        return True 
+        return True

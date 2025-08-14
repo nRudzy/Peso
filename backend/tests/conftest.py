@@ -37,9 +37,9 @@ def db_session(db_engine):
     connection = db_engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
-    
+
     yield session
-    
+
     session.close()
     transaction.rollback()
     connection.close()
@@ -48,12 +48,13 @@ def db_session(db_engine):
 @pytest.fixture
 def client(db_session):
     """Create test client with database session."""
+
     def override_get_db():
         try:
             yield db_session
         finally:
             pass
-    
+
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
@@ -66,15 +67,11 @@ def test_user_data():
     return {
         "email": "test@example.com",
         "password": "testpassword123",
-        "name": "Test User"
+        "name": "Test User",
     }
 
 
 @pytest.fixture
 def test_weight_data():
     """Sample weight data for tests."""
-    return {
-        "weight": 75.5,
-        "date": "2024-01-15",
-        "notes": "Test weight entry"
-    }
+    return {"weight": 75.5, "date": "2024-01-15", "notes": "Test weight entry"}

@@ -1,8 +1,12 @@
 <template>
   <div class="dashboard">
     <div class="dashboard-header">
-      <h1 class="text-2xl font-bold text-gray-900">Tableau de Bord</h1>
-      <p class="text-gray-600">Suivez votre progression de poids</p>
+      <h1 class="text-2xl font-bold text-gray-900">
+        Tableau de Bord
+      </h1>
+      <p class="text-gray-600">
+        Suivez votre progression de poids
+      </p>
     </div>
     
     <div class="dashboard-grid">
@@ -18,9 +22,9 @@
       <!-- Weight Chart -->
       <div class="dashboard-section">
         <WeightChart
+          ref="weightChart"
           :weight-unit="userProfile?.weight_unit || 'kg'"
           :user-id="userProfile?.id"
-          ref="weightChart"
         />
       </div>
       
@@ -28,13 +32,21 @@
       <div class="dashboard-section">
         <div class="profile-summary">
           <div class="profile-header">
-            <h3 class="text-lg font-semibold text-gray-900">Profil Utilisateur</h3>
-            <button @click="editProfile" class="text-blue-600 hover:text-blue-800 text-sm">
+            <h3 class="text-lg font-semibold text-gray-900">
+              Profil Utilisateur
+            </h3>
+            <button
+              class="text-blue-600 hover:text-blue-800 text-sm"
+              @click="editProfile"
+            >
               Modifier
             </button>
           </div>
           
-          <div class="profile-content" v-if="userProfile">
+          <div
+            v-if="userProfile"
+            class="profile-content"
+          >
             <div class="profile-item">
               <span class="profile-label">Nom</span>
               <span class="profile-value">
@@ -65,14 +77,22 @@
             
             <div class="profile-item">
               <span class="profile-label">Statut</span>
-              <span class="profile-status" :class="emailVerifiedClass">
+              <span
+                class="profile-status"
+                :class="emailVerifiedClass"
+              >
                 {{ userProfile.email_verified ? 'Vérifié' : 'Non vérifié' }}
               </span>
             </div>
           </div>
           
-          <div v-else class="profile-loading">
-            <p class="text-gray-500">Chargement du profil...</p>
+          <div
+            v-else
+            class="profile-loading"
+          >
+            <p class="text-gray-500">
+              Chargement du profil...
+            </p>
           </div>
         </div>
       </div>
@@ -80,11 +100,18 @@
       <!-- Quick Stats -->
       <div class="dashboard-section">
         <div class="quick-stats">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Statistiques Rapides</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Statistiques Rapides
+          </h3>
           
-          <div class="stats-grid" v-if="weightStats">
+          <div
+            v-if="weightStats"
+            class="stats-grid"
+          >
             <div class="stat-card">
-              <div class="stat-icon">📊</div>
+              <div class="stat-icon">
+                📊
+              </div>
               <div class="stat-content">
                 <span class="stat-value">{{ weightStats.total_entries }}</span>
                 <span class="stat-label">Entrées</span>
@@ -92,7 +119,9 @@
             </div>
             
             <div class="stat-card">
-              <div class="stat-icon">⚖️</div>
+              <div class="stat-icon">
+                ⚖️
+              </div>
               <div class="stat-content">
                 <span class="stat-value">{{ weightStats.current_weight }} {{ userProfile?.weight_unit }}</span>
                 <span class="stat-label">Poids actuel</span>
@@ -100,9 +129,14 @@
             </div>
             
             <div class="stat-card">
-              <div class="stat-icon">📈</div>
+              <div class="stat-icon">
+                📈
+              </div>
               <div class="stat-content">
-                <span class="stat-value" :class="weightChangeClass">
+                <span
+                  class="stat-value"
+                  :class="weightChangeClass"
+                >
                   {{ formatWeightChange(weightStats.weight_change) }}
                 </span>
                 <span class="stat-label">Variation</span>
@@ -110,7 +144,9 @@
             </div>
             
             <div class="stat-card">
-              <div class="stat-icon">🎯</div>
+              <div class="stat-icon">
+                🎯
+              </div>
               <div class="stat-content">
                 <span class="stat-value">{{ weightStats.average_weight }} {{ userProfile?.weight_unit }}</span>
                 <span class="stat-label">Moyenne</span>
@@ -118,8 +154,13 @@
             </div>
           </div>
           
-          <div v-else class="stats-loading">
-            <p class="text-gray-500">Chargement des statistiques...</p>
+          <div
+            v-else
+            class="stats-loading"
+          >
+            <p class="text-gray-500">
+              Chargement des statistiques...
+            </p>
           </div>
         </div>
       </div>
@@ -179,7 +220,7 @@ export default {
       }
     }
     
-    const onEntryCreated = (entry) => {
+    const onEntryCreated = () => {
       // Refresh chart and stats
       if (weightChart.value) {
         weightChart.value.updateChart()

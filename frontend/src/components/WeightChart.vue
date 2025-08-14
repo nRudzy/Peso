@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import 'chartjs-adapter-date-fns'
 import { weightEntriesApi } from '@/services/api'

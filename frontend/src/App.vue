@@ -3,11 +3,23 @@
     <div v-if="isAuthenticated">
       <header class="bg-blue-600 text-white p-4">
         <div class="container mx-auto flex justify-between items-center">
-          <h1 class="text-2xl font-bold">Peso - Suivi de Poids</h1>
+          <h1 class="text-2xl font-bold">
+            Peso - Suivi de Poids
+          </h1>
           <nav class="flex space-x-4">
-            <a href="#" class="hover:text-blue-200">Accueil</a>
-            <a href="#" class="hover:text-blue-200">Profil</a>
-            <a href="#" @click="logout" class="hover:text-blue-200">Déconnexion</a>
+            <a
+              href="#"
+              class="hover:text-blue-200"
+            >Accueil</a>
+            <a
+              href="#"
+              class="hover:text-blue-200"
+            >Profil</a>
+            <a
+              href="#"
+              class="hover:text-blue-200"
+              @click="logout"
+            >Déconnexion</a>
           </nav>
         </div>
       </header>
@@ -17,7 +29,10 @@
       </main>
     </div>
     
-    <Login v-else @login-success="handleLoginSuccess" />
+    <Login
+      v-else
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>
 
@@ -40,7 +55,7 @@ export default {
       isAuthenticated.value = !!token
     }
 
-    const handleLoginSuccess = (data) => {
+    const handleLoginSuccess = () => {
       isAuthenticated.value = true
     }
 

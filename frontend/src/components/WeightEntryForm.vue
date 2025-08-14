@@ -1,12 +1,20 @@
 <template>
   <div class="weight-entry-form">
     <div class="form-header">
-      <h3 class="text-lg font-semibold text-gray-900">Nouvelle Entrée de Poids</h3>
+      <h3 class="text-lg font-semibold text-gray-900">
+        Nouvelle Entrée de Poids
+      </h3>
     </div>
     
-    <form @submit.prevent="submitForm" class="space-y-4">
+    <form
+      class="space-y-4"
+      @submit.prevent="submitForm"
+    >
       <div class="form-group">
-        <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          for="weight"
+          class="block text-sm font-medium text-gray-700 mb-1"
+        >
           Poids ({{ weightUnit }})
         </label>
         <input
@@ -19,11 +27,14 @@
           required
           class="form-input"
           :placeholder="`Ex: 70.5 ${weightUnit}`"
-        />
+        >
       </div>
       
       <div class="form-group">
-        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          for="date"
+          class="block text-sm font-medium text-gray-700 mb-1"
+        >
           Date
         </label>
         <input
@@ -32,11 +43,14 @@
           type="datetime-local"
           required
           class="form-input"
-        />
+        >
       </div>
       
       <div class="form-group">
-        <label for="comment" class="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          for="comment"
+          class="block text-sm font-medium text-gray-700 mb-1"
+        >
           Commentaire (optionnel)
         </label>
         <textarea
@@ -45,12 +59,17 @@
           rows="3"
           class="form-textarea"
           placeholder="Ex: Poids du matin, après le sport..."
-        ></textarea>
+        />
       </div>
       
       <!-- BMI Calculation Display -->
-      <div v-if="bmiData" class="bmi-section">
-        <h4 class="text-md font-medium text-gray-800 mb-2">Calcul IMC</h4>
+      <div
+        v-if="bmiData"
+        class="bmi-section"
+      >
+        <h4 class="text-md font-medium text-gray-800 mb-2">
+          Calcul IMC
+        </h4>
         <div class="bmi-grid">
           <div class="bmi-item">
             <span class="bmi-label">IMC</span>
@@ -58,7 +77,10 @@
           </div>
           <div class="bmi-item">
             <span class="bmi-label">Catégorie</span>
-            <span class="bmi-category" :class="bmiData.categoryClass">
+            <span
+              class="bmi-category"
+              :class="bmiData.categoryClass"
+            >
               {{ bmiData.category }}
             </span>
           </div>
@@ -75,27 +97,40 @@
           :disabled="loading"
           class="btn-primary"
         >
-          <span v-if="loading" class="loading-spinner-small"></span>
+          <span
+            v-if="loading"
+            class="loading-spinner-small"
+          />
           {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
         </button>
         
         <button
           type="button"
-          @click="resetForm"
           class="btn-secondary"
           :disabled="loading"
+          @click="resetForm"
         >
           Réinitialiser
         </button>
       </div>
     </form>
     
-    <div v-if="error" class="error-message">
-      <p class="text-red-600">{{ error }}</p>
+    <div
+      v-if="error"
+      class="error-message"
+    >
+      <p class="text-red-600">
+        {{ error }}
+      </p>
     </div>
     
-    <div v-if="success" class="success-message">
-      <p class="text-green-600">{{ success }}</p>
+    <div
+      v-if="success"
+      class="success-message"
+    >
+      <p class="text-green-600">
+        {{ success }}
+      </p>
     </div>
   </div>
 </template>

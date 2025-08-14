@@ -22,12 +22,10 @@ class TestUserEndpoints:
 
     def test_update_current_user_profile(self, client, auth_headers):
         """Test updating current user profile"""
-        update_data = {
-            "first_name": "Updated",
-            "last_name": "Name",
-            "age": 30
-        }
-        response = client.put("/api/v1/users/me", json=update_data, headers=auth_headers)
+        update_data = {"first_name": "Updated", "last_name": "Name", "age": 30}
+        response = client.put(
+            "/api/v1/users/me", json=update_data, headers=auth_headers
+        )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert "data" in data
@@ -37,9 +35,11 @@ class TestUserEndpoints:
         """Test successful password change"""
         password_data = {
             "current_password": "testpassword123",
-            "new_password": "newpassword123"
+            "new_password": "newpassword123",
         }
-        response = client.post("/api/v1/users/me/change-password", json=password_data, headers=auth_headers)
+        response = client.post(
+            "/api/v1/users/me/change-password", json=password_data, headers=auth_headers
+        )
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["message"] == "Password changed successfully"
 
@@ -47,9 +47,11 @@ class TestUserEndpoints:
         """Test password change with wrong current password"""
         password_data = {
             "current_password": "wrongpassword",
-            "new_password": "newpassword123"
+            "new_password": "newpassword123",
         }
-        response = client.post("/api/v1/users/me/change-password", json=password_data, headers=auth_headers)
+        response = client.post(
+            "/api/v1/users/me/change-password", json=password_data, headers=auth_headers
+        )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_deactivate_account(self, client, auth_headers):
@@ -62,7 +64,7 @@ class TestUserEndpoints:
         """Test getting users list"""
         # Create some test users
         UserFactory.create_batch(3)
-        
+
         response = client.get("/api/v1/users")
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -74,7 +76,7 @@ class TestUserEndpoints:
         """Test users list with pagination"""
         # Create more users than default page size
         UserFactory.create_batch(25)
-        
+
         response = client.get("/api/v1/users?page=1&limit=10")
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -87,7 +89,7 @@ class TestUserEndpoints:
         # Create users with specific names
         UserFactory(first_name="John", last_name="Doe")
         UserFactory(first_name="Jane", last_name="Smith")
-        
+
         response = client.get("/api/v1/users?search=John")
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -98,7 +100,7 @@ class TestUserEndpoints:
     def test_get_user_profile_public(self, client, db_session):
         """Test getting public user profile"""
         user = UserFactory(profile_visibility=True)
-        
+
         response = client.get(f"/api/v1/users/{user.id}")
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -108,7 +110,7 @@ class TestUserEndpoints:
     def test_get_user_profile_private(self, client, db_session):
         """Test getting private user profile"""
         user = UserFactory(profile_visibility=False)
-        
+
         response = client.get(f"/api/v1/users/{user.id}")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -125,15 +127,15 @@ class TestUserService:
         """Test successful user creation"""
         from app.services.user_service import UserService
         from app.schemas.user import UserCreate
-        
+
         service = UserService(db_session)
         user_data = UserCreate(
             email="newuser@example.com",
             password="password123",
             first_name="New",
-            last_name="User"
+            last_name="User",
         )
-        
+
         user = service.create_user(user_data)
         assert user.email == "newuser@example.com"
         assert user.first_name == "New"
@@ -144,18 +146,18 @@ class TestUserService:
         from app.services.user_service import UserService
         from app.schemas.user import UserCreate
         from app.core.exceptions import UserAlreadyExistsException
-        
+
         service = UserService(db_session)
         user_data = UserCreate(
             email="duplicate@example.com",
             password="password123",
             first_name="First",
-            last_name="User"
+            last_name="User",
         )
-        
+
         # Create first user
         service.create_user(user_data)
-        
+
         # Try to create second user with same email
         with pytest.raises(UserAlreadyExistsException):
             service.create_user(user_data)
@@ -163,12 +165,12 @@ class TestUserService:
     def test_get_user_by_email(self, db_session):
         """Test getting user by email"""
         from app.services.user_service import UserService
-        
+
         service = UserService(db_session)
         user = UserFactory()
         db_session.add(user)
         db_session.commit()
-        
+
         found_user = service.get_user_by_email(user.email)
         assert found_user is not None
         assert found_user.email == user.email
@@ -177,14 +179,14 @@ class TestUserService:
         """Test user update"""
         from app.services.user_service import UserService
         from app.schemas.user import UserUpdate
-        
+
         service = UserService(db_session)
         user = UserFactory()
         db_session.add(user)
         db_session.commit()
-        
+
         update_data = UserUpdate(first_name="Updated", age=25)
         updated_user = service.update_user(user.id, update_data)
-        
+
         assert updated_user.first_name == "Updated"
-        assert updated_user.age == 25 
+        assert updated_user.age == 25

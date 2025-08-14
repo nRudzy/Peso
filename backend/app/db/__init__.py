@@ -1,1 +1,1 @@
-# Database session and migrations 
+# Database session and migrations

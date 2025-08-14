@@ -50,15 +50,15 @@ def clean_database():
     with engine.begin() as conn:
         # Get all table names
         tables = Base.metadata.tables.keys()
-        
+
         # Delete all data from all tables
         for table_name in tables:
             conn.execute(text(f"DELETE FROM {table_name}"))
-        
+
         # Reset auto-increment counters for SQLite
         for table_name in tables:
             conn.execute(text(f"DELETE FROM sqlite_sequence WHERE name='{table_name}'"))
-    
+
     yield
 
 
@@ -87,7 +87,7 @@ def test_user(db_session):
         email="test@example.com",
         password="testpassword123",
         first_name="Test",
-        last_name="User"
+        last_name="User",
     )
     user = user_service.create_user(user_data)
     return user
@@ -96,10 +96,7 @@ def test_user(db_session):
 @pytest.fixture
 def auth_headers(client, test_user):
     """Authentication headers fixture"""
-    login_data = {
-        "email": "test@example.com",
-        "password": "testpassword123"
-    }
+    login_data = {"email": "test@example.com", "password": "testpassword123"}
     response = client.post("/api/v1/auth/login", json=login_data)
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
@@ -108,11 +105,11 @@ def auth_headers(client, test_user):
 @pytest.fixture(autouse=True)
 def mock_email_service():
     """Mock email service to prevent real emails during tests"""
-    with patch('app.services.auth_service.EmailService') as mock_email:
+    with patch("app.services.auth_service.EmailService") as mock_email:
         # Mock the send_verification_email method
         mock_email.return_value.send_verification_email = AsyncMock(return_value=True)
         # Mock the send_password_reset_email method
         mock_email.return_value.send_password_reset_email = AsyncMock(return_value=True)
         # Mock the send_welcome_email method
         mock_email.return_value.send_welcome_email = AsyncMock(return_value=True)
-        yield mock_email 
+        yield mock_email

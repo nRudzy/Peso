@@ -8,7 +8,7 @@ from app.schemas.user import UserCreate, UserUpdate, UserCreateDB
 
 class UserRepository(BaseRepository[User, UserCreateDB, UserUpdate]):
     """User repository with specific user operations"""
-    
+
     def __init__(self, db: Session):
         super().__init__(User, db)
 
@@ -18,26 +18,35 @@ class UserRepository(BaseRepository[User, UserCreateDB, UserUpdate]):
 
     def get_active_users(self, skip: int = 0, limit: int = 100) -> List[User]:
         """Get only active users"""
-        return self.db.query(User).filter(
-            User.is_active == True
-        ).offset(skip).limit(limit).all()
+        return (
+            self.db.query(User)
+            .filter(User.is_active == True)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def search_users(
-        self, 
-        search_term: str, 
-        skip: int = 0, 
-        limit: int = 100
+        self, search_term: str, skip: int = 0, limit: int = 100
     ) -> List[User]:
         """Search users by name or email"""
-        return self.db.query(User).filter(
-            and_(
-                User.is_active == True,
-                User.profile_visibility == True,
-                (User.first_name.ilike(f"%{search_term}%") |
-                 User.last_name.ilike(f"%{search_term}%") |
-                 User.email.ilike(f"%{search_term}%"))
+        return (
+            self.db.query(User)
+            .filter(
+                and_(
+                    User.is_active == True,
+                    User.profile_visibility == True,
+                    (
+                        User.first_name.ilike(f"%{search_term}%")
+                        | User.last_name.ilike(f"%{search_term}%")
+                        | User.email.ilike(f"%{search_term}%")
+                    ),
+                )
             )
-        ).offset(skip).limit(limit).all()
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def verify_email(self, user_id: int) -> bool:
         """Verify user email"""
@@ -64,4 +73,4 @@ class UserRepository(BaseRepository[User, UserCreateDB, UserUpdate]):
             user.hashed_password = hashed_password
             self.db.commit()
             return True
-        return False 
+        return False

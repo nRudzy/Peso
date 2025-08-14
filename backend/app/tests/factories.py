@@ -8,10 +8,10 @@ from app.core.security import get_password_hash
 
 class UserFactory(factory.Factory):
     """Factory for creating test users"""
-    
+
     class Meta:
         model = User
-    
+
     email = factory.Sequence(lambda n: f"user{n}@example.com")
     hashed_password = factory.LazyFunction(lambda: get_password_hash("testpassword123"))
     first_name = factory.Faker("first_name")
@@ -30,10 +30,10 @@ class UserFactory(factory.Factory):
 
 class WeightEntryFactory(factory.Factory):
     """Factory for creating test weight entries"""
-    
+
     class Meta:
         model = WeightEntry
-    
+
     weight = factory.Faker("pyfloat", min_value=50, max_value=120)
     date = factory.Faker("date_time_between", start_date="-30d", end_date="now")
     comment = factory.Faker("sentence", nb_words=5)
@@ -42,14 +42,17 @@ class WeightEntryFactory(factory.Factory):
 
 class UnverifiedUserFactory(UserFactory):
     """Factory for creating unverified users"""
+
     email_verified = False
 
 
 class InactiveUserFactory(UserFactory):
     """Factory for creating inactive users"""
+
     is_active = False
 
 
 class PrivateUserFactory(UserFactory):
     """Factory for creating users with private profiles"""
-    profile_visibility = False 
+
+    profile_visibility = False

@@ -19,4 +19,4 @@ class WeightEntry(Base):
     user = relationship("User", back_populates="weight_entries")
 
     def __repr__(self):
-        return f"<WeightEntry(id={self.id}, weight={self.weight}, date='{self.date}')>" 
+        return f"<WeightEntry(id={self.id}, weight={self.weight}, date='{self.date}')>"

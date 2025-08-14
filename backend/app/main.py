@@ -27,7 +27,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -51,7 +51,7 @@ async def root():
     return {
         "message": "Peso API - Weight Tracking Application",
         "version": "1.0.0",
-        "docs": "/docs"
+        "docs": "/docs",
     }
 
 
@@ -64,10 +64,10 @@ async def health_check():
 @app.get("/export/swagger-collection")
 async def export_swagger_collection():
     """Export Swagger documentation as a ready-to-use Postman collection"""
-    
+
     # Get OpenAPI schema
     openapi_schema = app.openapi()
-    
+
     # Create Postman collection structure
     collection = {
         "info": {
@@ -75,70 +75,56 @@ async def export_swagger_collection():
             "description": "Collection complète pour tester l'API Peso de suivi de poids",
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
             "version": "1.0.0",
-            "exported_at": datetime.now().isoformat()
+            "exported_at": datetime.now().isoformat(),
         },
         "variable": [
-            {
-                "key": "base_url",
-                "value": "http://localhost:8000",
-                "type": "string"
-            },
-            {
-                "key": "auth_token",
-                "value": "",
-                "type": "string"
-            }
+            {"key": "base_url", "value": "http://localhost:8000", "type": "string"},
+            {"key": "auth_token", "value": "", "type": "string"},
         ],
         "auth": {
             "type": "bearer",
-            "bearer": [
-                {
-                    "key": "token",
-                    "value": "{{auth_token}}",
-                    "type": "string"
-                }
-            ]
+            "bearer": [{"key": "token", "value": "{{auth_token}}", "type": "string"}],
         },
-        "item": []
+        "item": [],
     }
-    
+
     # Process each path and method
     processed_endpoints = set()  # To avoid duplicates
-    
+
     for path, path_data in openapi_schema["paths"].items():
         for method, method_data in path_data.items():
             if method.upper() in ["GET", "POST", "PUT", "DELETE", "PATCH"]:
                 # Create unique identifier for this endpoint
                 endpoint_id = f"{method.upper()}_{path}"
-                
+
                 # Skip if already processed
                 if endpoint_id in processed_endpoints:
                     continue
-                
+
                 processed_endpoints.add(endpoint_id)
-                
+
                 # Create request item
                 item = {
                     "name": method_data.get("summary", f"{method.upper()} {path}"),
                     "request": {
                         "method": method.upper(),
                         "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
+                            {"key": "Content-Type", "value": "application/json"}
                         ],
                         "url": {
                             "raw": "{{base_url}}" + path,
                             "host": ["{{base_url}}"],
-                            "path": path.strip("/").split("/")
-                        }
+                            "path": path.strip("/").split("/"),
+                        },
                     },
-                    "response": []
+                    "response": [],
                 }
-                
+
                 # Add request body for POST/PUT/PATCH
-                if method.upper() in ["POST", "PUT", "PATCH"] and "requestBody" in method_data:
+                if (
+                    method.upper() in ["POST", "PUT", "PATCH"]
+                    and "requestBody" in method_data
+                ):
                     content = method_data["requestBody"].get("content", {})
                     if "application/json" in content:
                         schema = content["application/json"].get("schema", {})
@@ -153,54 +139,54 @@ async def export_swagger_collection():
                                     example_body[prop_name] = 0
                                 elif prop_data.get("type") == "boolean":
                                     example_body[prop_name] = False
-                            
+
                             if example_body:
                                 item["request"]["body"] = {
                                     "mode": "raw",
                                     "raw": json.dumps(example_body, indent=2),
-                                    "options": {
-                                        "raw": {
-                                            "language": "json"
-                                        }
-                                    }
+                                    "options": {"raw": {"language": "json"}},
                                 }
-                
+
                 # Add query parameters for GET requests
                 if method.upper() == "GET" and "parameters" in method_data:
                     query_params = []
                     for param in method_data["parameters"]:
                         if param.get("in") == "query":
-                            query_params.append({
-                                "key": param["name"],
-                                "value": param.get("example", ""),
-                                "description": param.get("description", "")
-                            })
+                            query_params.append(
+                                {
+                                    "key": param["name"],
+                                    "value": param.get("example", ""),
+                                    "description": param.get("description", ""),
+                                }
+                            )
                     if query_params:
                         item["request"]["url"]["query"] = query_params
-                
+
                 # Add path parameters
                 if "parameters" in method_data:
                     path_params = []
                     for param in method_data["parameters"]:
                         if param.get("in") == "path":
-                            path_params.append({
-                                "key": param["name"],
-                                "value": param.get("example", "1"),
-                                "description": param.get("description", "")
-                            })
+                            path_params.append(
+                                {
+                                    "key": param["name"],
+                                    "value": param.get("example", "1"),
+                                    "description": param.get("description", ""),
+                                }
+                            )
                     if path_params:
                         item["request"]["url"]["variable"] = path_params
-                
+
                 # Add description
                 if "description" in method_data:
                     item["description"] = method_data["description"]
-                
+
                 # Add tags for organization
                 if "tags" in method_data:
                     item["tag"] = method_data["tags"]
-                
+
                 collection["item"].append(item)
-    
+
     # Group items by tags
     grouped_items = {}
     for item in collection["item"]:
@@ -210,28 +196,25 @@ async def export_swagger_collection():
         if primary_tag not in grouped_items:
             grouped_items[primary_tag] = []
         grouped_items[primary_tag].append(item)
-    
+
     # Reorganize collection with folders
     collection["item"] = []
     for tag, items in grouped_items.items():
-        folder = {
-            "name": tag,
-            "item": items
-        }
+        folder = {"name": tag, "item": items}
         collection["item"].append(folder)
-    
+
     return JSONResponse(
         content=collection,
         headers={
             "Content-Disposition": "attachment; filename=peso-api-collection.json"
-        }
+        },
     )
 
 
 @app.get("/docs/custom", response_class=HTMLResponse)
 async def custom_documentation():
     """Custom documentation page with export button"""
-    
+
     html_content = """
     <!DOCTYPE html>
     <html lang="fr">
@@ -587,5 +570,5 @@ Cette page: http://localhost:8000/docs/custom</pre>
     </body>
     </html>
     """
-    
-    return HTMLResponse(content=html_content) 
+
+    return HTMLResponse(content=html_content)

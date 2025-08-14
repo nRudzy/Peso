@@ -1,1 +1,1 @@
-# FastAPI Weight Tracking Application 
+# FastAPI Weight Tracking Application

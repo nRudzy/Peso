@@ -25,12 +25,12 @@ class UserService:
         # Check if user already exists
         if self.repository.get_by_email(user_data.email):
             raise UserAlreadyExistsException(user_data.email)
-        
+
         # Create user data with hashed password
         user_dict = user_data.model_dump()
-        user_dict['hashed_password'] = get_password_hash(user_data.password)
-        del user_dict['password']
-        
+        user_dict["hashed_password"] = get_password_hash(user_data.password)
+        del user_dict["password"]
+
         return self.repository.create(UserCreateDB(**user_dict))
 
     def update_user(self, user_id: int, user_data: UserUpdate) -> User:
@@ -38,7 +38,7 @@ class UserService:
         user = self.get_user_by_id(user_id)
         if not user:
             raise UserNotFoundException(user_id)
-        
+
         return self.repository.update(user, user_data)
 
     def verify_password(self, user_id: int, password: str) -> bool:
@@ -64,6 +64,8 @@ class UserService:
         """Get paginated list of users"""
         return self.repository.get_active_users(skip, limit)
 
-    def search_users(self, search_term: str, skip: int = 0, limit: int = 100) -> List[User]:
+    def search_users(
+        self, search_term: str, skip: int = 0, limit: int = 100
+    ) -> List[User]:
         """Search users by name or email"""
-        return self.repository.search_users(search_term, skip, limit) 
+        return self.repository.search_users(search_term, skip, limit)

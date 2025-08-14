@@ -4,10 +4,7 @@ from app.core.config import settings
 
 # Create database engine
 engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    echo=settings.DEBUG
+    settings.DATABASE_URL, pool_pre_ping=True, pool_recycle=300, echo=settings.DEBUG
 )
 
 # Create session factory
@@ -20,4 +17,4 @@ def get_db():
     try:
         yield db
     finally:
-        db.close() 
+        db.close()
