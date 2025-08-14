@@ -195,6 +195,16 @@
         @entry-deleted="onEntryDeleted"
       />
     </div>
+    
+    <!-- Edit Weight Entry Modal -->
+    <EditWeightEntryModal
+      :is-visible="isEditModalVisible"
+      :entry="selectedEntry"
+      :weight-unit="userProfile?.weight_unit || 'kg'"
+      :user-height="userProfile?.height"
+      @close="onEditModalClose"
+      @entry-updated="onEditModalEntryUpdated"
+    />
   </div>
 </template>
 
@@ -205,6 +215,7 @@ import WeightChart from '@/components/WeightChart.vue'
 import BMIChart from '@/components/BMIChart.vue'
 import WeightStatistics from '@/components/WeightStatistics.vue'
 import WeightHistory from '@/components/WeightHistory.vue'
+import EditWeightEntryModal from '@/components/Modal/EditWeightEntryModal.vue'
 import { authApi, weightEntriesApi } from '@/services/api'
 
 export default {
@@ -214,7 +225,8 @@ export default {
     WeightChart,
     BMIChart,
     WeightStatistics,
-    WeightHistory
+    WeightHistory,
+    EditWeightEntryModal
   },
   setup() {
     const userProfile = ref(null)
@@ -225,6 +237,10 @@ export default {
     const weightHistory = ref(null)
     const loading = ref(false)
     const error = ref(null)
+    
+    // Modal state
+    const isEditModalVisible = ref(false)
+    const selectedEntry = ref(null)
     
     const emailVerifiedClass = computed(() => {
       return userProfile.value?.email_verified 
@@ -264,8 +280,19 @@ export default {
       refreshAllComponents()
     }
     
-    const onEntryUpdated = () => {
-      // Refresh all components
+    const onEntryUpdated = (entry) => {
+      // Show edit modal
+      selectedEntry.value = entry
+      isEditModalVisible.value = true
+    }
+    
+    const onEditModalClose = () => {
+      isEditModalVisible.value = false
+      selectedEntry.value = null
+    }
+    
+    const onEditModalEntryUpdated = (updatedEntry) => {
+      // Refresh all components after successful edit
       refreshAllComponents()
     }
     
@@ -319,23 +346,27 @@ export default {
       loading.value = false
     })
     
-    return {
-      userProfile,
-      weightStats,
-      weightChart,
-      bmiChart,
-      weightStatistics,
-      weightHistory,
-      loading,
-      error,
-      emailVerifiedClass,
-      weightChangeClass,
-      onEntryCreated,
-      onEntryUpdated,
-      onEntryDeleted,
-      editProfile,
-      formatWeightChange
-    }
+      return {
+        userProfile,
+        weightStats,
+        weightChart,
+        bmiChart,
+        weightStatistics,
+        weightHistory,
+        loading,
+        error,
+        isEditModalVisible,
+        selectedEntry,
+        emailVerifiedClass,
+        weightChangeClass,
+        onEntryCreated,
+        onEntryUpdated,
+        onEntryDeleted,
+        onEditModalClose,
+        onEditModalEntryUpdated,
+        editProfile,
+        formatWeightChange
+      }
   }
 }
 </script>

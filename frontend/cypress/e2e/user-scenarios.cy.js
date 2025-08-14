@@ -206,12 +206,15 @@ describe('User Scenarios E2E Tests', () => {
 
       // Edit an entry
       cy.get('[data-testid="edit-entry-button"]').first().click()
-      cy.get('[data-testid="weight-input"]').clear().type('75.2')
-      cy.get('[data-testid="comment-input"]').clear().type('Poids du matin - corrigé')
-      cy.get('[data-testid="submit-button"]').click()
+      
+      // Check that modal is visible
+      cy.get('[data-testid="edit-weight-input"]').should('be.visible')
+      cy.get('[data-testid="edit-weight-input"]').clear().type('75.2')
+      cy.get('[data-testid="edit-comment-input"]').clear().type('Poids du matin - corrigé')
+      cy.get('[data-testid="edit-submit-button"]').click()
 
       cy.wait('@updateEntry')
-      cy.get('[data-testid="success-message"]').should('be.visible')
+      cy.get('[data-testid="edit-success-message"]').should('be.visible')
 
       // Delete an entry
       cy.get('[data-testid="delete-entry-button"]').first().click()
@@ -261,6 +264,30 @@ describe('User Scenarios E2E Tests', () => {
 
       // Check that BMI chart shows no height message
       cy.get('[data-testid="bmi-chart"]').should('contain', 'Veuillez configurer votre taille')
+    })
+  })
+
+  describe('Scenario 11: Modal functionality', () => {
+    it('should open and close edit modal correctly', () => {
+      cy.login()
+      cy.visit('/dashboard')
+      cy.waitForLoading()
+
+      // Open edit modal
+      cy.get('[data-testid="edit-entry-button"]').first().click()
+      cy.get('[data-testid="edit-weight-input"]').should('be.visible')
+
+      // Close modal with close button
+      cy.get('[data-testid="modal-close-button"]').click()
+      cy.get('[data-testid="edit-weight-input"]').should('not.exist')
+
+      // Open modal again
+      cy.get('[data-testid="edit-entry-button"]').first().click()
+      cy.get('[data-testid="edit-weight-input"]').should('be.visible')
+
+      // Close modal with cancel button
+      cy.get('button').contains('Annuler').click()
+      cy.get('[data-testid="edit-weight-input"]').should('not.exist')
     })
   })
 

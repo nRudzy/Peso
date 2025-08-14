@@ -13,6 +13,7 @@
 - **Fichiers Python** : snake_case (ex: `user_service.py`, `weight_entry.py`)
 - **Fichiers JavaScript/Vue** : camelCase ou PascalCase (ex: `userService.js`, `WeightEntry.vue`)
 - **Dossiers** : kebab-case (ex: `mobile-app/`, `weight-entries/`)
+- **Modales** : Toujours dans le dossier `components/Modal/` (ex: `EditWeightEntryModal.vue`)
 - **Variables** : snake_case en Python, camelCase en JavaScript
 - **Constantes** : UPPER_SNAKE_CASE
 - **Classes** : PascalCase dans tous les langages
@@ -329,6 +330,44 @@ export default {
     }
   },
   emits: ['click']
+}
+</script>
+```
+
+### Modales
+```vue
+<!-- Toujours placer les modales dans components/Modal/ -->
+<!-- Structure standard pour les modales -->
+<template>
+  <div v-if="isVisible" class="modal-overlay" @click="closeModal">
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
+        <h3 class="modal-title">{{ title }}</h3>
+        <button @click="closeModal" class="modal-close-btn">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Contenu de la modale -->
+      </div>
+      
+      <div class="modal-actions">
+        <button @click="closeModal" class="btn-secondary">Annuler</button>
+        <button @click="submit" class="btn-primary">Confirmer</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ExampleModal',
+  props: {
+    isVisible: {
+      type: Boolean,
+      default: false
+    }
+  },
+  emits: ['close', 'submit']
 }
 </script>
 ```

@@ -166,26 +166,29 @@ describe('Dashboard E2E Tests', () => {
     cy.get('[data-testid="pagination-info"]').should('contain', 'Page 1 sur 1')
   })
 
-  it('should allow editing weight entry', () => {
-    const newWeight = 75.0
+      it('should allow editing weight entry', () => {
+      const newWeight = 75.0
 
-    cy.intercept('PUT', '/api/v1/weight-entries/1', {
-      statusCode: 200,
-      body: {
-        id: 1,
-        weight: newWeight,
-        date: '2024-01-15T10:00:00Z',
-        comment: 'Test entry 1'
-      }
-    }).as('updateWeightEntry')
+      cy.intercept('PUT', '/api/v1/weight-entries/1', {
+        statusCode: 200,
+        body: {
+          id: 1,
+          weight: newWeight,
+          date: '2024-01-15T10:00:00Z',
+          comment: 'Test entry 1'
+        }
+      }).as('updateWeightEntry')
 
-    cy.get('[data-testid="edit-entry-button"]').first().click()
-    cy.get('[data-testid="weight-input"]').clear().type(newWeight)
-    cy.get('[data-testid="submit-button"]').click()
+      cy.get('[data-testid="edit-entry-button"]').first().click()
+      
+      // Check that modal is visible
+      cy.get('[data-testid="edit-weight-input"]').should('be.visible')
+      cy.get('[data-testid="edit-weight-input"]').clear().type(newWeight)
+      cy.get('[data-testid="edit-submit-button"]').click()
 
-    cy.wait('@updateWeightEntry')
-    cy.get('[data-testid="success-message"]').should('be.visible')
-  })
+      cy.wait('@updateWeightEntry')
+      cy.get('[data-testid="edit-success-message"]').should('be.visible')
+    })
 
   it('should allow deleting weight entry', () => {
     cy.intercept('DELETE', '/api/v1/weight-entries/1', {
