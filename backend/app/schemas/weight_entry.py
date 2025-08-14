@@ -44,4 +44,22 @@ class WeightEntryResponse(WeightEntryInDB):
 
 class WeightEntryWithUser(WeightEntryResponse):
     """Schema for weight entry with user info"""
-    user_email: str 
+    user_email: str
+
+
+class WeightStatistics(BaseModel):
+    """Schema for weight statistics"""
+    total_entries: int
+    current_weight: Optional[float] = None
+    initial_weight: Optional[float] = None
+    min_weight: Optional[float] = None
+    max_weight: Optional[float] = None
+    average_weight: Optional[float] = None
+
+
+class WeightProgress(BaseModel):
+    """Schema for weight progress over time"""
+    total_entries: int
+    average_weight: float
+    weight_change: float
+    entries: list[WeightEntryResponse] 

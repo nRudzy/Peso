@@ -70,6 +70,16 @@ export const weightEntriesApi = {
   // Delete weight entry
   async deleteWeightEntry(id) {
     return api.delete(`/v1/weight-entries/${id}`)
+  },
+
+  // Get weight progress for a period
+  async getWeightProgress(period) {
+    return api.get(`/v1/weight-entries/progress/${period}`)
+  },
+
+  // Get weight statistics
+  async getWeightStatistics() {
+    return api.get('/v1/weight-entries/statistics')
   }
 }
 

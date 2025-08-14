@@ -131,6 +131,7 @@
 import { ref, onMounted, computed } from 'vue'
 import WeightEntryForm from '@/components/WeightEntryForm.vue'
 import WeightChart from '@/components/WeightChart.vue'
+import { authApi, weightEntriesApi } from '@/services/api'
 
 export default {
   name: 'Dashboard',
@@ -161,17 +162,8 @@ export default {
     
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch('/api/v1/users/me', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement du profil')
-        }
-        
-        userProfile.value = await response.json()
+        const response = await authApi.getCurrentUser()
+        userProfile.value = response.data
       } catch (err) {
         error.value = err.message
         console.error('Error fetching user profile:', err)
@@ -180,17 +172,8 @@ export default {
     
     const fetchWeightStats = async () => {
       try {
-        const response = await fetch('/api/v1/weight-entries/statistics', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement des statistiques')
-        }
-        
-        weightStats.value = await response.json()
+        const response = await weightEntriesApi.getWeightStatistics()
+        weightStats.value = response.data
       } catch (err) {
         console.error('Error fetching weight stats:', err)
       }

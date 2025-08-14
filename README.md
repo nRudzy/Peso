@@ -100,11 +100,13 @@ peso/
    ```
 
 4. **Accéder aux services**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - Documentation API: http://localhost:8000/docs
-   - Nginx (reverse proxy): http://localhost:80
+   - Frontend: http://localhost
+   - Backend API: http://localhost/api/v1/*
+   - Documentation API: http://localhost/docs
+   - Health Check: http://localhost/api/health
    - Mailpit (emails): http://localhost:8025
+
+   > 📖 **Documentation détaillée** : Voir [Configuration Nginx Reverse Proxy](infra/NGINX_REVERSE_PROXY.md) pour plus d'informations sur l'architecture et le routage.
 
 ## 🚀 Développement
 

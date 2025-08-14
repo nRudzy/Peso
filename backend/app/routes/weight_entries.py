@@ -5,7 +5,8 @@ from datetime import datetime
 from app.core.database import get_db
 from app.core.dependencies import get_current_verified_user
 from app.schemas.weight_entry import (
-    WeightEntryResponse, WeightEntryCreate, WeightEntryUpdate
+    WeightEntryResponse, WeightEntryCreate, WeightEntryUpdate,
+    WeightStatistics, WeightProgress
 )
 from app.schemas.common import BaseResponse, PaginatedResponse, PaginationMetadata
 from app.services.weight_entry_service import WeightEntryService
@@ -75,7 +76,7 @@ async def get_latest_weight_entry(
     return entry
 
 
-@router.get("/weight-entries/statistics", response_model=dict)
+@router.get("/weight-entries/statistics", response_model=WeightStatistics)
 async def get_weight_statistics(
     current_user = Depends(get_current_verified_user),
     db: Session = Depends(get_db)
@@ -83,10 +84,10 @@ async def get_weight_statistics(
     """Get weight statistics for current user"""
     weight_service = WeightEntryService(db)
     statistics = weight_service.get_weight_statistics(current_user.id)
-    return statistics
+    return WeightStatistics(**statistics)
 
 
-@router.get("/weight-entries/progress/{days}", response_model=dict)
+@router.get("/weight-entries/progress/{days}", response_model=WeightProgress)
 async def get_weight_progress(
     days: int,
     current_user = Depends(get_current_verified_user),
@@ -95,7 +96,7 @@ async def get_weight_progress(
     """Get weight progress over a period"""
     weight_service = WeightEntryService(db)
     progress = weight_service.get_weight_progress(current_user.id, days)
-    return progress
+    return WeightProgress(**progress)
 
 
 @router.get("/weight-entries/{entry_id}", response_model=WeightEntryResponse)

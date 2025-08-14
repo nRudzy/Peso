@@ -47,6 +47,7 @@
 <script>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import Chart from 'chart.js/auto'
+import { weightEntriesApi } from '@/services/api'
 
 export default {
   name: 'WeightChart',
@@ -154,17 +155,8 @@ export default {
       error.value = null
       
       try {
-        const response = await fetch(`/api/v1/weight-entries/progress/${selectedPeriod.value}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors du chargement des données')
-        }
-        
-        const data = await response.json()
+        const response = await weightEntriesApi.getWeightProgress(selectedPeriod.value)
+        const data = response.data
         
         // Format data for chart
         const chartData = {

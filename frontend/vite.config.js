@@ -26,15 +26,9 @@ export default defineConfig(({ command, mode }) => {
       },
       proxy: {
         '/api': {
-          target: apiUrl,
+          target: 'http://backend:8000',
           changeOrigin: true,
-          secure: false,
-          configure: (proxy, options) => {
-            // Force IPv4 instead of IPv6
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              proxyReq.setHeader('host', '127.0.0.1:8000')
-            })
-          }
+          secure: false
         }
       }
     },
