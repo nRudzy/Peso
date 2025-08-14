@@ -1,31 +1,30 @@
 <template>
   <div id="app">
     <header class="bg-blue-600 text-white p-4">
-      <h1 class="text-2xl font-bold">Peso - Suivi de Poids</h1>
+      <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Peso - Suivi de Poids</h1>
+        <nav class="flex space-x-4">
+          <a href="#" class="hover:text-blue-200">Accueil</a>
+          <a href="#" class="hover:text-blue-200">Profil</a>
+          <a href="#" class="hover:text-blue-200">Déconnexion</a>
+        </nav>
+      </div>
     </header>
     
     <main class="container mx-auto p-4">
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-semibold mb-4">Bienvenue sur Peso</h2>
-        <p class="text-gray-600 mb-4">
-          Application de suivi de poids en cours de développement.
-        </p>
-        <div class="bg-blue-50 border border-blue-200 rounded p-4">
-          <h3 class="font-semibold text-blue-800 mb-2">Services disponibles :</h3>
-          <ul class="text-blue-700 space-y-1">
-            <li>• Backend API : <a href="http://localhost:8000/docs" class="underline" target="_blank">Documentation</a></li>
-            <li>• Frontend : Cette page</li>
-            <li>• Mailpit : <a href="http://localhost:8025" class="underline" target="_blank">Emails de test</a></li>
-          </ul>
-        </div>
-      </div>
+      <Dashboard />
     </main>
   </div>
 </template>
 
 <script>
+import Dashboard from '@/views/Dashboard.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Dashboard
+  }
 }
 </script>
 

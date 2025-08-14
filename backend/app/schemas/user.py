@@ -10,6 +10,7 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    avatar: Optional[str] = None  # URL de l'avatar
     gender: Optional[GenderEnum] = None
     age: Optional[int] = Field(None, ge=0, le=150)
     height: Optional[float] = Field(None, ge=0)
@@ -34,6 +35,7 @@ class UserUpdate(BaseModel):
     """Schema for user updates"""
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    avatar: Optional[str] = None  # URL de l'avatar
     gender: Optional[GenderEnum] = None
     age: Optional[int] = Field(None, ge=0, le=150)
     height: Optional[float] = Field(None, ge=0)

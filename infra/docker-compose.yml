@@ -1,8 +1,6 @@
 # Docker Compose for Peso SaaS - Development Environment
 # This file orchestrates all services for local development
 
-version: '3.8'
-
 services:
   # Backend API
   backend:

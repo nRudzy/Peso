@@ -13,6 +13,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
+    avatar = Column(String, nullable=True)  # URL de l'avatar
     gender = Column(Enum(GenderEnum), nullable=True)
     age = Column(Integer, nullable=True)
     height = Column(Float, nullable=True)
