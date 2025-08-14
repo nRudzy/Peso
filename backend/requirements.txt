@@ -35,5 +35,5 @@ isort==5.12.0
 flake8==6.1.0
 mypy==1.7.1
 bandit==1.7.5
-safety==2.3.5
+# safety==2.3.5  # Temporarily commented due to dependency conflict
 pytest-cov==4.1.0 
