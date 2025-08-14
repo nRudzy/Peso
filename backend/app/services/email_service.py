@@ -10,7 +10,7 @@ class EmailService:
     def __init__(self):
         # Configure email settings based on environment
         use_credentials = bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
-        use_tls = settings.SMTP_HOST != "mailhog"  # Disable TLS for MailHog
+        use_tls = settings.SMTP_HOST != "mailpit"  # Disable TLS for Mailpit
         
         self.conf = ConnectionConfig(
             MAIL_USERNAME=settings.SMTP_USER,

@@ -1,65 +1,71 @@
-# Peso - API de Suivi de Perte de Poids
+# Peso - SaaS de Suivi de Poids
 
-Une API REST moderne et performante pour le suivi de perte de poids, développée avec FastAPI et PostgreSQL.
+Un SaaS complet pour le suivi de poids avec backend FastAPI, frontend VueJS, application mobile et infrastructure AWS.
 
 ## 🚀 Fonctionnalités
 
-- **Authentification JWT** avec tokens d'accès et de rafraîchissement
-- **Gestion des utilisateurs** avec profils personnalisables
-- **Suivi des entrées de poids** avec historique et statistiques
-- **Vérification d'email** à l'inscription
-- **Réinitialisation de mot de passe** par email
-- **API documentée** avec Swagger/OpenAPI
-- **Export collection Postman** prête à l'emploi
-- **Page de documentation personnalisée** avec interface moderne
-- **Architecture modulaire** avec séparation des responsabilités
-- **100% dockerisé** pour un déploiement facile
+- **Backend API** - FastAPI avec authentification JWT et gestion des utilisateurs
+- **Frontend Web** - Application VueJS moderne avec interface utilisateur intuitive
+- **Application Mobile** - App React Native/Ionic pour iOS et Android
+- **Infrastructure Cloud** - Déploiement automatisé sur AWS avec Terraform/CloudFormation
+- **Base de données** - PostgreSQL avec migrations Alembic
+- **Cache** - Redis pour les performances
+- **Monitoring** - Logs et métriques centralisés
+- **CI/CD** - Pipeline automatisé avec GitHub Actions
 
-## 🛠️ Technologies
+## 🛠️ Stack Technologique
 
-- **Backend**: FastAPI (Python 3.11)
-- **Base de données**: PostgreSQL 15
-- **ORM**: SQLAlchemy 2.0
-- **Authentification**: JWT (PyJWT)
-- **Migrations**: Alembic
-- **Tests**: Pytest
-- **Emails**: FastAPI-Mail
-- **Conteneurisation**: Docker & Docker Compose
+### Backend
+- **FastAPI** - Framework Python moderne et performant
+- **SQLAlchemy** - ORM pour la base de données
+- **Alembic** - Migrations de base de données
+- **PostgreSQL** - Base de données principale
+- **Redis** - Cache et sessions
 
-## 📁 Structure du Projet
+### Frontend
+- **Vue.js 3** - Framework JavaScript progressif
+- **Vite** - Build tool moderne
+- **Tailwind CSS** - Framework CSS utilitaire
+- **Pinia** - State management
+- **Vue Router** - Routing
+
+### Mobile
+- **React Native** ou **Ionic** - Framework mobile cross-platform
+- **Expo** (si React Native) - Outils de développement
+- **Capacitor** (si Ionic) - Build natif
+
+### Infrastructure
+- **Docker** - Conteneurisation
+- **AWS** - Cloud provider
+- **Terraform** - Infrastructure as Code
+- **CloudFormation** - Templates AWS
+- **Nginx** - Reverse proxy
+- **GitHub Actions** - CI/CD
+
+## 📁 Structure du Monorepo
 
 ```
-app/
-├── main.py                   # Point d'entrée FastAPI
-├── core/                    # Configuration et utilitaires
-│   ├── config.py           # Paramètres de l'application
-│   ├── database.py         # Configuration base de données
-│   ├── security.py         # Utilitaires de sécurité
-│   └── dependencies.py     # Dépendances FastAPI
-├── models/                  # Modèles SQLAlchemy
-│   ├── user.py             # Modèle utilisateur
-│   └── weight_entry.py     # Modèle entrée de poids
-├── schemas/                 # Schémas Pydantic
-│   ├── common.py           # Schémas communs
-│   ├── user.py             # Schémas utilisateur
-│   ├── auth.py             # Schémas authentification
-│   └── weight_entry.py     # Schémas entrée de poids
-├── services/                # Logique métier
-│   ├── user_service.py     # Service utilisateur
-│   ├── auth_service.py     # Service authentification
-│   ├── weight_entry_service.py # Service entrées de poids
-│   └── email_service.py    # Service emails
-├── routes/                  # Routes API
-│   ├── auth.py             # Routes authentification
-│   ├── users.py            # Routes utilisateurs
-│   └── weight_entries.py   # Routes entrées de poids
-├── utils/                   # Utilitaires
-│   ├── pagination.py       # Utilitaires pagination
-│   ├── token_generator.py  # Générateurs de tokens
-│   └── bmi_calculator.py   # Calculs IMC
-└── tests/                   # Tests unitaires
-    ├── conftest.py         # Configuration tests
-    └── test_auth.py        # Tests authentification
+peso/
+├── backend/                  # Backend FastAPI
+│   ├── app/                  # Code principal de l'API
+│   ├── tests/                # Tests unitaires / fonctionnels
+│   ├── alembic/              # Migrations DB
+│   └── Dockerfile            # Conteneur backend
+├── frontend/                 # Frontend VueJS
+│   ├── public/               # Fichiers statiques
+│   ├── src/                  # Vue components, views, store
+│   └── Dockerfile            # Conteneur frontend
+├── mobile-app/               # App mobile (React Native ou Ionic)
+│   ├── src/                  # Code mobile
+│   └── README.md             # Notes spécifiques mobile
+├── infra/                    # Infrastructure & déploiement
+│   ├── docker-compose.yml    # Pour dev local multi-services
+│   ├── nginx/                # Config nginx si besoin de reverse proxy
+│   ├── aws/                  # Configs Terraform / CloudFormation
+│   └── scripts/              # Scripts de setup / deploy / backup
+├── .env                      # Fichier d'environnement général
+├── README.md                 # Documentation projet
+└── LICENSE                   # Licence open-source ou commerciale
 ```
 
 ## 🐳 Installation avec Docker
@@ -83,259 +89,109 @@ app/
    # Éditer .env avec vos paramètres
    ```
 
-3. **Lancer l'application**
+3. **Lancer l'environnement complet**
    ```bash
+   # Option 1: Script automatique
+   ./dev.sh
+   
+   # Option 2: Manuel
+   cd infra
    docker-compose up -d
    ```
 
-4. **Accéder à l'API**
-   - API: http://localhost:8000
-   - Documentation Swagger: http://localhost:8000/docs
-   - Documentation ReDoc: http://localhost:8000/redoc
-   - Documentation personnalisée: http://localhost:8000/docs/custom
-   - Export collection Postman: http://localhost:8000/export/swagger-collection
+4. **Accéder aux services**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - Documentation API: http://localhost:8000/docs
+   - Nginx (reverse proxy): http://localhost:80
+   - Mailpit (emails): http://localhost:8025
 
-### Variables d'environnement
+## 🚀 Développement
 
-Copiez `env.example` vers `.env` et configurez :
-
-```env
-# Base de données
-DATABASE_URL=postgresql://peso_user:peso_password@db:5432/peso_db
-
-# Sécurité
-SECRET_KEY=votre-clé-secrète-très-sécurisée
-ALGORITHM=HS256
-
-# Email (pour la vérification et réinitialisation)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=votre-email@gmail.com
-SMTP_PASSWORD=votre-mot-de-passe-app
-FROM_EMAIL=votre-email@gmail.com
-```
-
-## 📚 API Endpoints
-
-### Documentation et Export
-- `GET /docs` - Documentation Swagger interactive
-- `GET /redoc` - Documentation ReDoc
-- `GET /docs/custom` - Page de documentation personnalisée avec bouton d'export
-- `GET /export/swagger-collection` - Export collection Postman prête à l'emploi
-
-### Authentification
-- `POST /api/v1/auth/register` - Inscription utilisateur
-- `POST /api/v1/auth/login` - Connexion
-- `POST /api/v1/auth/refresh` - Rafraîchir token
-- `POST /api/v1/auth/verify-email` - Vérifier email
-- `POST /api/v1/auth/forgot-password` - Mot de passe oublié
-- `POST /api/v1/auth/reset-password` - Réinitialiser mot de passe
-
-### Utilisateurs
-- `GET /api/v1/users/me` - Profil utilisateur actuel
-- `PUT /api/v1/users/me` - Modifier profil
-- `POST /api/v1/users/me/change-password` - Changer mot de passe
-- `DELETE /api/v1/users/me` - Désactiver compte
-- `GET /api/v1/users` - Liste des utilisateurs (paginated)
-- `GET /api/v1/users/{user_id}` - Profil public utilisateur
-
-### Entrées de Poids
-- `POST /api/v1/weight-entries` - Créer entrée
-- `GET /api/v1/weight-entries` - Liste des entrées (paginated)
-- `GET /api/v1/weight-entries/{entry_id}` - Détails entrée
-- `PUT /api/v1/weight-entries/{entry_id}` - Modifier entrée
-- `DELETE /api/v1/weight-entries/{entry_id}` - Supprimer entrée
-- `GET /api/v1/weight-entries/latest` - Dernière entrée
-- `GET /api/v1/weight-entries/progress/{days}` - Progression
-- `GET /api/v1/weight-entries/statistics` - Statistiques
-
-## 🧪 Tests
-
-### Lancer les tests
+### Backend
 ```bash
-# Avec Docker
-docker-compose exec web pytest
-
-# Localement
-pytest
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
 
-### Couverture des tests
+### Frontend
 ```bash
-pytest --cov=app --cov-report=html
+cd frontend
+npm install
+npm run dev
 ```
 
-## 🔧 Développement
+### Mobile App
+```bash
+cd mobile-app
+npm install
+# Pour React Native
+npx expo start
+# Pour Ionic
+ionic serve
+```
 
-### Installation locale
+## 🌐 Déploiement
 
-1. **Créer un environnement virtuel**
+### Infrastructure AWS
+
+1. **Configurer AWS CLI**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # ou
-   venv\Scripts\activate     # Windows
+   aws configure
    ```
 
-2. **Installer les dépendances**
+2. **Déployer avec Terraform**
    ```bash
-   pip install -r requirements.txt
+   cd infra/aws/terraform
+   terraform init
+   terraform plan
+   terraform apply
    ```
 
-3. **Configurer la base de données**
+3. **Ou déployer avec CloudFormation**
    ```bash
-   # Créer les migrations
-   alembic revision --autogenerate -m "Initial migration"
-   
-   # Appliquer les migrations
-   alembic upgrade head
+   cd infra/aws/cloudformation
+   aws cloudformation create-stack --stack-name peso --template-body file://main.yaml
    ```
 
-4. **Lancer l'application**
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-### Commandes utiles
+### Scripts de déploiement
 
 ```bash
-# Générer une nouvelle migration
-alembic revision --autogenerate -m "Description"
+# Déployer l'application complète
+./infra/scripts/deploy.sh
 
-# Appliquer les migrations
-alembic upgrade head
+# Sauvegarder la base de données
+./infra/scripts/backup.sh
 
-# Annuler la dernière migration
-alembic downgrade -1
-
-# Voir l'état des migrations
-alembic current
-alembic history
+# Vérifier l'état des services
+./infra/scripts/health-check.sh
 ```
 
-## 📥 Export Collection Swagger
+## 📚 Documentation
 
-L'API inclut une fonctionnalité d'export automatique de collection Postman :
-
-### Export via Interface Web
-- Accédez à http://localhost:8000/docs/custom
-- Cliquez sur le bouton "📥 Télécharger Collection Postman"
-- La collection sera téléchargée au format JSON
-
-### Export Direct
-- Endpoint : `GET /export/swagger-collection`
-- Retourne un fichier JSON compatible Postman
-- Inclut tous les endpoints avec exemples et authentification
-
-### Fonctionnalités de la Collection
-- **Organisation par tags** : Authentication, Users, Weight Entries
-- **Variables d'environnement** : base_url, auth_token
-- **Authentification Bearer** configurée automatiquement
-- **Exemples de requêtes** avec données de test
-- **Paramètres de requête** et variables de chemin
-- **Headers** et Content-Type configurés
-
-### Utilisation de la Collection
-1. Importez le fichier JSON dans Postman
-2. Configurez la variable `base_url` selon votre environnement
-3. Utilisez l'endpoint de login pour obtenir un token
-4. Le token sera automatiquement utilisé pour les requêtes authentifiées
-
-## 📊 Format des Réponses
-
-Toutes les réponses suivent un format standardisé :
-
-### Réponse simple
-```json
-{
-  "message": "Opération réussie",
-  "success": true
-}
-```
-
-### Réponse paginée
-```json
-{
-  "data": [...],
-  "metadata": {
-    "page": 1,
-    "limit": 20,
-    "total": 58,
-    "total_pages": 3
-  }
-}
-```
-
-### Réponse d'erreur
-```json
-{
-  "message": "Description de l'erreur",
-  "success": false,
-  "error_code": "ERROR_CODE",
-  "details": {...}
-}
-```
-
-## 🔐 Sécurité
-
-- **JWT** pour l'authentification
-- **Mots de passe hashés** avec bcrypt
-- **CORS** configuré
-- **Validation des données** avec Pydantic
-- **Protection contre les injections SQL** avec SQLAlchemy
-- **Tokens d'expiration** configurés
-
-## 📈 Performance
-
-- **FastAPI** pour des performances optimales
-- **Pool de connexions** PostgreSQL
-- **Pagination** sur toutes les listes
-- **Index de base de données** optimisés
-- **Cache** possible avec Redis (à implémenter)
-
-## 🚀 Déploiement
-
-### Production
-
-1. **Modifier les variables d'environnement**
-   ```env
-   DEBUG=false
-   SECRET_KEY=clé-très-sécurisée-en-production
-   ```
-
-2. **Configurer un reverse proxy** (Nginx)
-3. **Configurer SSL/TLS**
-4. **Sauvegarder la base de données**
-5. **Monitoring et logs**
-
-### Docker Production
-```bash
-# Build optimisé
-docker build -t peso-api .
-
-# Lancer avec variables d'environnement
-docker run -d \
-  -p 8000:8000 \
-  -e DATABASE_URL=... \
-  -e SECRET_KEY=... \
-  peso-api
-```
+- [Architecture](docs/ARCHITECTURE.md)
+- [API Documentation](backend/README.md)
+- [Frontend Guide](frontend/README.md)
+- [Mobile App Guide](mobile-app/README.md)
+- [Infrastructure Guide](infra/README.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
 
 ## 🤝 Contribution
 
 1. Fork le projet
 2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
 ## 📄 Licence
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-## 🆘 Support
+## 📞 Support
 
-Pour toute question ou problème :
+Pour toute question ou support :
 - Ouvrir une issue sur GitHub
-- Consulter la documentation API : http://localhost:8000/docs
-- Vérifier les logs : `docker-compose logs web` 
+- Consulter la documentation
+- Contacter l'équipe de développement 
