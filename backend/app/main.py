@@ -8,7 +8,7 @@ from datetime import datetime
 from app.core.config import settings
 from app.core.database import engine
 from app.models import Base
-from app.routes import auth, users, weight_entries
+from app.routes import auth, users, weight_entries, daily_journal, notifications
 
 
 @asynccontextmanager
@@ -43,6 +43,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1", tags=["Users"])
 app.include_router(weight_entries.router, prefix="/api/v1", tags=["Weight Entries"])
+app.include_router(daily_journal.router, prefix="/api/v1", tags=["Daily Journal"])
+app.include_router(notifications.router, prefix="/api/v1", tags=["Notifications"])
 
 
 @app.get("/")

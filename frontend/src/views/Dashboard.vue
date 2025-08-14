@@ -185,16 +185,30 @@
       </div>
     </div>
     
-    <!-- Weight History Section -->
-    <div class="history-section" data-testid="weight-history">
-      <WeightHistory
-        ref="weightHistory"
-        :weight-unit="userProfile?.weight_unit || 'kg'"
-        :user-height="userProfile?.height"
-        @entry-updated="onEntryUpdated"
-        @entry-deleted="onEntryDeleted"
-      />
-    </div>
+          <!-- Daily Journal Form Section -->
+      <div class="journal-section mb-8">
+        <DailyJournalForm @entry-created="onJournalEntryCreated" />
+      </div>
+      
+      <!-- Daily Journal History Section -->
+      <div class="journal-history-section mb-8" data-testid="daily-journal-history">
+        <DailyJournalHistory
+          ref="dailyJournalHistory"
+          @entry-updated="onJournalEntryUpdated"
+          @entry-deleted="onJournalEntryDeleted"
+        />
+      </div>
+      
+      <!-- Weight History Section -->
+      <div class="history-section" data-testid="weight-history">
+        <WeightHistory
+          ref="weightHistory"
+          :weight-unit="userProfile?.weight_unit || 'kg'"
+          :user-height="userProfile?.height"
+          @entry-updated="onEntryUpdated"
+          @entry-deleted="onEntryDeleted"
+        />
+      </div>
     
     <!-- Edit Weight Entry Modal -->
     <EditWeightEntryModal
@@ -204,6 +218,14 @@
       :user-height="userProfile?.height"
       @close="onEditModalClose"
       @entry-updated="onEditModalEntryUpdated"
+    />
+    
+    <!-- Edit Daily Journal Modal -->
+    <EditDailyJournalModal
+      :is-visible="isEditJournalModalVisible"
+      :entry="selectedJournalEntry"
+      @close="onEditJournalModalClose"
+      @entry-updated="onEditJournalModalEntryUpdated"
     />
   </div>
 </template>
@@ -216,6 +238,9 @@ import BMIChart from '@/components/BMIChart.vue'
 import WeightStatistics from '@/components/WeightStatistics.vue'
 import WeightHistory from '@/components/WeightHistory.vue'
 import EditWeightEntryModal from '@/components/Modal/EditWeightEntryModal.vue'
+import DailyJournalForm from '@/components/DailyJournalForm.vue'
+import DailyJournalHistory from '@/components/DailyJournalHistory.vue'
+import EditDailyJournalModal from '@/components/Modal/EditDailyJournalModal.vue'
 import { authApi, weightEntriesApi } from '@/services/api'
 
 export default {
@@ -226,7 +251,10 @@ export default {
     BMIChart,
     WeightStatistics,
     WeightHistory,
-    EditWeightEntryModal
+    EditWeightEntryModal,
+    DailyJournalForm,
+    DailyJournalHistory,
+    EditDailyJournalModal
   },
   setup() {
     const userProfile = ref(null)
@@ -235,12 +263,15 @@ export default {
     const bmiChart = ref(null)
     const weightStatistics = ref(null)
     const weightHistory = ref(null)
+    const dailyJournalHistory = ref(null)
     const loading = ref(false)
     const error = ref(null)
     
     // Modal state
     const isEditModalVisible = ref(false)
     const selectedEntry = ref(null)
+    const isEditJournalModalVisible = ref(false)
+    const selectedJournalEntry = ref(null)
     
     const emailVerifiedClass = computed(() => {
       return userProfile.value?.email_verified 
@@ -299,6 +330,38 @@ export default {
     const onEntryDeleted = () => {
       // Refresh all components
       refreshAllComponents()
+    }
+    
+    const onJournalEntryCreated = () => {
+      // Refresh journal components
+      if (dailyJournalHistory.value) {
+        dailyJournalHistory.value.fetchEntries(true)
+      }
+    }
+    
+    const onJournalEntryUpdated = (entry) => {
+      // Show edit journal modal
+      selectedJournalEntry.value = entry
+      isEditJournalModalVisible.value = true
+    }
+    
+    const onEditJournalModalClose = () => {
+      isEditJournalModalVisible.value = false
+      selectedJournalEntry.value = null
+    }
+    
+    const onEditJournalModalEntryUpdated = (updatedEntry) => {
+      // Refresh journal components after successful edit
+      if (dailyJournalHistory.value) {
+        dailyJournalHistory.value.fetchEntries(true)
+      }
+    }
+    
+    const onJournalEntryDeleted = () => {
+      // Refresh journal components
+      if (dailyJournalHistory.value) {
+        dailyJournalHistory.value.fetchEntries(true)
+      }
     }
     
     const refreshAllComponents = () => {
@@ -372,6 +435,11 @@ export default {
         onEntryDeleted,
         onEditModalClose,
         onEditModalEntryUpdated,
+        onJournalEntryCreated,
+        onJournalEntryUpdated,
+        onEditJournalModalClose,
+        onEditJournalModalEntryUpdated,
+        onJournalEntryDeleted,
         editProfile,
         formatWeightChange
       }

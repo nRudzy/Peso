@@ -152,3 +152,34 @@ class WeightEntryService:
             "goal_progression_percentage": round(goal_progression_percentage, 1) if goal_progression_percentage is not None else None,
             "weight_to_goal": round(weight_to_goal, 1) if weight_to_goal is not None else None,
         }
+
+    def get_weight_statistics_for_period(self, user_id: int, start_date: datetime, end_date: datetime) -> dict:
+        """Get weight statistics for a specific period"""
+        entries = self.get_weight_entries_by_date_range(
+            user_id, start_date, end_date, skip=0, limit=1000
+        )
+
+        if not entries:
+            return {
+                "total_entries": 0,
+                "current_weight": None,
+                "average_weight": None,
+                "weight_change": 0,
+            }
+
+        weights = [entry.weight for entry in entries]
+        sorted_entries = sorted(entries, key=lambda x: x.date)
+        
+        # Calculate weight change (first entry vs last entry in period)
+        weight_change = (
+            sorted_entries[-1].weight - sorted_entries[0].weight
+            if len(sorted_entries) > 1
+            else 0
+        )
+
+        return {
+            "total_entries": len(entries),
+            "current_weight": sorted_entries[-1].weight if sorted_entries else None,
+            "average_weight": round(sum(weights) / len(weights), 2),
+            "weight_change": round(weight_change, 2),
+        }

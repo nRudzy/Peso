@@ -110,4 +110,49 @@ export const authApi = {
   }
 }
 
+export const dailyJournalApi = {
+  // Get journal entries
+  async getJournalEntries(params = {}) {
+    return api.get('/v1/daily-journal', { params })
+  },
+
+  // Get today's journal entry
+  async getTodayJournalEntry() {
+    return api.get('/v1/daily-journal/today')
+  },
+
+  // Get specific journal entry
+  async getJournalEntry(id) {
+    return api.get(`/v1/daily-journal/${id}`)
+  },
+
+  // Create journal entry
+  async createJournalEntry(data) {
+    return api.post('/v1/daily-journal', data)
+  },
+
+  // Update journal entry
+  async updateJournalEntry(id, data) {
+    return api.put(`/v1/daily-journal/${id}`, data)
+  },
+
+  // Delete journal entry
+  async deleteJournalEntry(id) {
+    return api.delete(`/v1/daily-journal/${id}`)
+  },
+
+  // Get journal statistics
+  async getJournalStatistics(params = {}) {
+    return api.get('/v1/daily-journal/statistics/summary', { params })
+  },
+
+  // Export journal data
+  async exportJournal(format, params = {}) {
+    return api.get(`/v1/daily-journal/export/${format}`, { 
+      params,
+      responseType: 'blob'
+    })
+  }
+}
+
 export default api

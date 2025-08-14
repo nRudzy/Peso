@@ -121,3 +121,127 @@ class EmailService:
         except Exception as e:
             logger.error(f"Failed to send welcome email to {email}: {str(e)}")
             return False
+
+    async def send_weekly_progress_email(
+        self, 
+        email: str, 
+        first_name: str,
+        weight_stats: dict,
+        journal_stats: dict,
+        weight_change: float,
+        target_weight: float,
+        current_weight: float
+    ) -> bool:
+        """Send weekly progress summary email with personalized encouragement"""
+        try:
+            # Generate personalized encouragement based on progress
+            encouragement = self._generate_encouragement(weight_change, journal_stats)
+            
+            # Format weight change
+            weight_change_text = f"{weight_change:+.1f} kg" if weight_change != 0 else "0 kg"
+            
+            # Calculate progress percentage towards target
+            if target_weight and current_weight:
+                initial_weight = current_weight - weight_change
+                total_to_lose = initial_weight - target_weight
+                progress_percentage = min(100, max(0, ((initial_weight - current_weight) / total_to_lose) * 100)) if total_to_lose > 0 else 0
+            else:
+                progress_percentage = 0
+
+            message = MessageSchema(
+                subject="📊 Votre résumé hebdomadaire Peso",
+                recipients=[email],
+                body=f"""
+                <html>
+                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                            <h2 style="color: #2563eb;">Bonjour {first_name} ! 👋</h2>
+                            
+                            <p>Voici votre résumé hebdomadaire de progression :</p>
+                            
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="color: #1e40af; margin-top: 0;">📈 Progression du poids</h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="margin: 10px 0;">🎯 <strong>Variation cette semaine :</strong> {weight_change_text}</li>
+                                    <li style="margin: 10px 0;">⚖️ <strong>Poids actuel :</strong> {current_weight} kg</li>
+                                    <li style="margin: 10px 0;">📊 <strong>Progression vers l'objectif :</strong> {progress_percentage:.1f}%</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                                <h3 style="color: #1e40af; margin-top: 0;">📝 Journal quotidien</h3>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li style="margin: 10px 0;">📅 <strong>Entrées journalières :</strong> {journal_stats.get('total_entries', 0)}</li>
+                                    <li style="margin: 10px 0;">😴 <strong>Qualité de sommeil moyenne :</strong> {journal_stats.get('average_sleep_quality', 'N/A')}/5</li>
+                                    <li style="margin: 10px 0;">⚡ <strong>Niveau d'énergie moyen :</strong> {journal_stats.get('average_energy_level', 'N/A')}/5</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+                                <h3 style="color: #1e40af; margin-top: 0;">💪 Encouragement personnalisé</h3>
+                                <p style="font-style: italic; margin: 0;">{encouragement}</p>
+                            </div>
+                            
+                            <p style="text-align: center; margin-top: 30px;">
+                                <a href="http://localhost:3000/dashboard" 
+                                   style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    Voir mon tableau de bord
+                                </a>
+                            </p>
+                            
+                            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
+                                Continuez votre excellent travail ! 💪<br>
+                                L'équipe Peso
+                            </p>
+                        </div>
+                    </body>
+                </html>
+                """,
+                subtype="html",
+            )
+
+            await self.fastmail.send_message(message)
+            logger.info(f"Weekly progress email sent to {email}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to send weekly progress email to {email}: {str(e)}")
+            return False
+
+    def _generate_encouragement(self, weight_change: float, journal_stats: dict) -> str:
+        """Generate personalized encouragement based on user's progress and journal data"""
+        encouragements = []
+        
+        # Weight-based encouragement
+        if weight_change < 0:
+            encouragements.append("Félicitations ! Vous avez perdu du poids cette semaine. Votre persévérance porte ses fruits ! 🌟")
+        elif weight_change > 0:
+            encouragements.append("Ne vous découragez pas ! Les fluctuations de poids sont normales. Concentrez-vous sur vos habitudes saines. 💪")
+        else:
+            encouragements.append("Vous maintenez votre poids stable, c'est déjà un excellent résultat ! Continuez sur cette lancée. 🎯")
+        
+        # Sleep-based encouragement
+        avg_sleep = journal_stats.get('average_sleep_quality')
+        if avg_sleep is not None:
+            if avg_sleep >= 4:
+                encouragements.append("Votre qualité de sommeil est excellente ! Cela contribue grandement à votre bien-être. 😴✨")
+            elif avg_sleep >= 3:
+                encouragements.append("Votre sommeil est correct. Essayez de vous coucher un peu plus tôt pour améliorer encore plus votre récupération. 🌙")
+            else:
+                encouragements.append("Votre sommeil pourrait être amélioré. Un bon repos est essentiel pour votre santé et votre progression. 💤")
+        
+        # Energy-based encouragement
+        avg_energy = journal_stats.get('average_energy_level')
+        if avg_energy is not None:
+            if avg_energy >= 4:
+                encouragements.append("Votre niveau d'énergie est au top ! Gardez cette dynamique positive. ⚡")
+            elif avg_energy >= 3:
+                encouragements.append("Votre énergie est stable. Continuez à maintenir vos bonnes habitudes. 🔋")
+            else:
+                encouragements.append("Votre énergie semble un peu basse. N'oubliez pas de bien vous hydrater et de faire de l'exercice modéré. 💧")
+        
+        # Combine encouragements
+        if encouragements:
+            return " ".join(encouragements[:2])  # Limit to 2 encouragements
+        else:
+            return "Continuez votre excellent travail ! Chaque petit pas compte vers votre objectif. 🎯"

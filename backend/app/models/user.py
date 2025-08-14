@@ -31,6 +31,9 @@ class User(Base):
     weight_entries = relationship(
         "WeightEntry", back_populates="user", cascade="all, delete-orphan"
     )
+    daily_journals = relationship(
+        "DailyJournal", back_populates="user", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}')>"
